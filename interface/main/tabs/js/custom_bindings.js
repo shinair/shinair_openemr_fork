@@ -78,10 +78,6 @@ ko.bindingHandlers.location={
                             tabData.title(titleText);
                         }
                     );
-                } else {
-                    // need to cancel the loading if we are on another domain
-                    // setting the title will hide the spinner and remove the Loading... text
-                    tabData.title(xl("Unknown"));
                 }
             } ,true
         );

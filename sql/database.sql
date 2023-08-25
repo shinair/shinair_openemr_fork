@@ -211,9 +211,6 @@ INSERT INTO `background_services` (`name`, `title`, `active`, `running`, `next_r
 ('WenoExchange', 'Weno Log Sync', 0, 0, '2021-01-18 11:25:10', 0, 'start_weno', '/library/weno_log_sync.php', 100);
 INSERT INTO `background_services` (`name`, `title`, `active`, `running`, `next_run`, `execute_interval`, `function`, `require_once`, `sort_order`) VALUES
 ('UUID_Service', 'Automated UUID Creation Service', 1, 0, '2021-01-18 11:25:10', 240, 'autoPopulateAllMissingUuids', '/library/uuid.php', 100);
-INSERT INTO `background_services` (`name`, `title`, `active`, `running`, `next_run`, `execute_interval`, `function`, `require_once`, `sort_order`) VALUES
-('Email_Service', 'Email Service', 1, 0, '2021-01-18 11:25:10', 2, 'emailServiceRun', '/library/email_service_run.php', 100);
-
 -- --------------------------------------------------------
 
 --
@@ -1514,29 +1511,6 @@ CREATE TABLE `eligibility_verification` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `email_queue`
---
-
-CREATE TABLE `email_queue` (
-  `id` bigint NOT NULL auto_increment,
-  `sender` varchar(255) DEFAULT '',
-  `recipient` varchar(255) DEFAULT '',
-  `subject` varchar(255) DEFAULT '',
-  `body` text,
-  `datetime_queued` datetime default NULL,
-  `sent` tinyint DEFAULT 0,
-  `datetime_sent` datetime default NULL,
-  `error` tinyint DEFAULT 0,
-  `error_message` text,
-  `datetime_error` datetime default NULL,
-  `template_name` VARCHAR(255) DEFAULT NULL COMMENT 'The folder prefix and base filename (w/o extension) of the twig template file to use for this email',
-PRIMARY KEY (`id`),
-KEY `sent` (`sent`)
-) ENGINE=InnoDb AUTO_INCREMENT=1;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `employer_data`
 --
 
@@ -1764,7 +1738,6 @@ CREATE TABLE `facility` (
   `iban` varchar(50) default NULL,
   `info` TEXT,
   `weno_id` VARCHAR(10) DEFAULT NULL,
-  `inactive` tinyint(1) NOT NULL DEFAULT '0',
   UNIQUE KEY `uuid` (`uuid`),
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4;
@@ -1773,7 +1746,7 @@ CREATE TABLE `facility` (
 -- Inserting data for table `facility`
 --
 
-INSERT INTO `facility` VALUES (3, NULL, 'Your Clinic Name Here', '000-000-0000', '000-000-0000', '', '', '', '', '', '', NULL, NULL, 1, 1, 1, NULL, '', '', '', '', '', '','#99FFFF','0', '', '1', '', '', '', '', '', '', '', '', NULL, 0);
+INSERT INTO `facility` VALUES (3, NULL, 'Your Clinic Name Here', '000-000-0000', '000-000-0000', '', '', '', '', '', '', NULL, NULL, 1, 1, 1, NULL, '', '', '', '', '', '','#99FFFF','0', '', '1', '', '', '', '', '', '', '', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -3261,26 +3234,6 @@ INSERT INTO insurance_type_codes(`id`,`type`,`claim_type`) VALUES ('26','Mutuall
 -- --------------------------------------------------------
 
 --
--- Table structure for table `ip_tracking`
---
-DROP TABLE IF EXISTS `ip_tracking`;
-CREATE TABLE `ip_tracking` (
-    `id` bigint NOT NULL auto_increment,
-    `ip_string` varchar(255) DEFAULT '',
-    `total_ip_login_fail_counter` bigint DEFAULT 0,
-    `ip_login_fail_counter` bigint DEFAULT 0,
-    `ip_last_login_fail` datetime DEFAULT NULL,
-    `ip_auto_block_emailed` tinyint DEFAULT 0,
-    `ip_force_block` tinyint DEFAULT 0,
-    `ip_no_prevent_timing_attack` tinyint DEFAULT 0,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `ip_string` (`ip_string`)
-) ENGINE=InnoDb AUTO_INCREMENT=1;
-
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `issue_encounter`
 --
 
@@ -3515,7 +3468,6 @@ INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`,
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`, `list_backup_id`, `source`, `conditions`, `validation`, `codes`) VALUES ('DEM','mname','1','',30,2,1,5,63,'',0,0,'','[\"C\",\"DAP\"]','Middle Name',0,'','F','','','');
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`, `list_backup_id`, `source`, `conditions`, `validation`, `codes`) VALUES ('DEM','lname','1','',40,2,2,20,63,'',0,0,'','[\"C\",\"D\",\"DAP\"]','Last Name',0,'','F','','','');
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`, `list_backup_id`, `source`, `conditions`, `validation`, `codes`) VALUES ('DEM','suffix','1','',50,2,1,5,63,'',0,0,'','[\"EP\",\"DAP\"]','Name Suffix',0,'','F','','','');
-INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`, `list_backup_id`, `source`, `conditions`, `validation`, `codes`) VALUES ('DEM','preferred_name','1','Preferred Name',55,2,1,32,64,'',1,3,'','[\"J\",\"DAP\"]','Patient preferred name or name patient is commonly known.',0,'','F','','','');
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`, `list_backup_id`, `source`, `conditions`, `validation`, `codes`) VALUES ('DEM','birth_fname','1','Birth Name',60,2,1,15,63,'',1,3,'','[\"C\",\"DAP\"]','Birth First Name',0,'','F','','','');
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`, `list_backup_id`, `source`, `conditions`, `validation`, `codes`) VALUES ('DEM','birth_mname','1','',70,2,1,5,63,'',0,0,'','[\"C\",\"DAP\"]','Middle Name',0,'','F','','','');
 INSERT INTO `layout_options` (`form_id`, `field_id`, `group_id`, `title`, `seq`, `data_type`, `uor`, `fld_length`, `max_length`, `list_id`, `titlecols`, `datacols`, `default_value`, `edit_options`, `description`, `fld_rows`, `list_backup_id`, `source`, `conditions`, `validation`, `codes`) VALUES ('DEM','birth_lname','1','',80,2,1,20,63,'',0,0,'','[\"C\",\"DAP\"]','Birth Last Name',0,'','F','','','');
@@ -4306,7 +4258,6 @@ INSERT INTO list_options ( list_id, option_id, title, seq, option_value ) VALUES
 INSERT INTO list_options (list_id, option_id, title , seq, option_value ) VALUES ('abook_type','emr_direct', 'EMR Direct' ,105,4);
 INSERT INTO list_options (list_id, option_id, title , seq, option_value ) VALUES ('abook_type','external_provider', 'External Provider' ,110,1);
 INSERT INTO list_options (list_id, option_id, title , seq, option_value ) VALUES ('abook_type','external_org', 'External Organization' ,120,1);
-INSERT INTO list_options (list_id, option_id, title , seq, option_value ) VALUES ('abook_type','bill_svc', 'Billing Service' ,120,3);
 
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('lists','proc_type','Procedure Types', 1,0);
 INSERT INTO list_options ( list_id, option_id, title, seq, is_default ) VALUES ('proc_type','grp','Group'          ,10,0);
@@ -7522,7 +7473,6 @@ CREATE TABLE `patient_data` (
   `provider_since_date` TINYTEXT,
   `created_by` BIGINT(20) DEFAULT NULL COMMENT 'users.id the user that first created this record',
   `updated_by` BIGINT(20) DEFAULT NULL COMMENT 'users.id the user that last modified this record',
-  `preferred_name` TINYTEXT,
   UNIQUE KEY `pid` (`pid`),
   UNIQUE KEY `uuid` (`uuid`),
   KEY `id` (`id`)
@@ -8917,10 +8867,7 @@ CREATE TABLE `users_secure` (
   `password_history4` varchar(255),
   `last_challenge_response` datetime DEFAULT NULL,
   `login_work_area` text,
-  `total_login_fail_counter` bigint DEFAULT 0,
   `login_fail_counter` INT(11) DEFAULT '0',
-  `last_login_fail` datetime DEFAULT NULL,
-  `auto_block_emailed` tinyint DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `USERNAME_ID` (`id`,`username`)
 ) ENGINE=InnoDb;
@@ -9077,7 +9024,6 @@ CREATE TABLE `x12_partners` (
   `x12_per06` varchar(80) NOT NULL DEFAULT '',
   `x12_dtp03` char(1)     NOT NULL DEFAULT 'A',
   `x12_gs03` varchar(15) DEFAULT NULL,
-  `x12_submitter_id` smallint(6) DEFAULT NULL,
   `x12_submitter_name` varchar(255) DEFAULT NULL,
   `x12_sftp_login` varchar(255) DEFAULT NULL,
   `x12_sftp_pass` varchar(255) DEFAULT NULL,
@@ -11230,7 +11176,6 @@ INSERT INTO list_options (`list_id`, `option_id`, `title`, `seq`, `is_default`, 
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `toggle_setting_1`, `toggle_setting_2`, `activity`) VALUES ('lists','Document_Template_Categories','Document Template Categories',0,1,0,'',NULL,'',0,0,1);
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `toggle_setting_1`, `toggle_setting_2`, `activity`) VALUES ('Document_Template_Categories','repository','Repository',1,1,0,'','','',0,0,1);
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `toggle_setting_1`, `toggle_setting_2`, `activity`) VALUES ('Document_Template_Categories','questionnaire','Questionnaires',10,0,0,'','','',0,0,1);
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `toggle_setting_1`, `toggle_setting_2`, `activity`) VALUES ('Document_Template_Categories','notification_template','Notification Template',20,0,0,'','','',0,0,1);
 
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `toggle_setting_1`, `toggle_setting_2`, `activity`, `subtype`, `edit_options`) VALUES ('lists','Clinical_Note_Type','Clinical Note Type',0,1,0,'',NULL,'',0,0,1,'',1);
 INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `toggle_setting_1`, `toggle_setting_2`, `activity`, `subtype`, `edit_options`) VALUES ('Clinical_Note_Type','evaluation_note','Evaluation Note',5,0,0,'','LOINC:51848-0','',0,0,1,'',1);
@@ -13078,7 +13023,6 @@ CREATE TABLE `oauth_clients` (
 `policy_uri` text,
 `tos_uri` text,
 `is_enabled` tinyint(1) NOT NULL DEFAULT '0',
-`skip_ehr_launch_authorization_flow` tinyint(1) NOT NULL DEFAULT '0',
 PRIMARY KEY (`client_id`)
 ) ENGINE=InnoDB;
 
@@ -13193,8 +13137,6 @@ CREATE TABLE `document_template_profiles` (
   `recurring` tinyint(1) NOT NULL DEFAULT 1,
   `event_trigger` varchar(31) NOT NULL,
   `period` int(4) NOT NULL,
-  `notify_trigger` varchar(31) NOT NULL,
-  `notify_period` int(4) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `location` (`profile`,`template_id`,`member_of`)
 ) ENGINE=InnoDB;
@@ -13310,32 +13252,4 @@ CREATE TABLE `onetime_auth` (
     `last_accessed` datetime DEFAULT NULL,
     PRIMARY KEY (`id`),
     KEY `pid` (`pid`,`onetime_token`(255))
-) ENGINE=InnoDB;
-
-
-DROP TABLE IF EXISTS `patient_settings`;
-CREATE TABLE `patient_settings` (
-     `setting_patient`  bigint(20)   NOT NULL DEFAULT 0,
-     `setting_label` varchar(100)  NOT NULL,
-     `setting_value` varchar(255) NOT NULL DEFAULT '',
-     PRIMARY KEY (`setting_patient`, `setting_label`)
-) ENGINE=InnoDB;
-
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`) VALUES ('lists', 'default_open_tabs', 'Default Open Tabs');
-INSERT INTO `list_options` (`list_id`, `notes`, `title`, `seq`, `option_id`, `activity`) VALUES ('default_open_tabs', 'interface/main/main_info.php', 'Calendar', 10, 'cal', '1');
-INSERT INTO `list_options` (`list_id`, `notes`, `title`, `seq`, `option_id`, `activity`) VALUES ('default_open_tabs', 'interface/new/new.php', 'Patient Search / Add', 20, 'pat', '0');
-INSERT INTO `list_options` (`list_id`, `notes`, `title`, `seq`, `option_id`, `activity`) VALUES ('default_open_tabs', 'interface/main/finder/dynamic_finder.php', 'Patient Finder', 30, 'fin', '0');
-INSERT INTO `list_options` (`list_id`, `notes`, `title`, `seq`, `option_id`, `activity`) VALUES ('default_open_tabs', 'interface/patient_tracker/patient_tracker.php?skip_timeout_reset=1', 'Flow Board', 40, 'flb', '0');
-INSERT INTO `list_options` (`list_id`, `notes`, `title`, `seq`, `option_id`, `activity`) VALUES ('default_open_tabs', 'interface/main/messages/messages.php?form_active=1', 'Message Inbox', 50, 'msg', '1');
-
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`) VALUES ('lists', 'recent_patient_columns', 'Recent Patient Columns');
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('recent_patient_columns', 'fname', 'First Name', '10');
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('recent_patient_columns', 'mname', 'Middle Name', '20');
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('recent_patient_columns', 'lname', 'Last Name', '30');
-INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`) VALUES ('recent_patient_columns', 'dob', 'Date of Birth', '40');
-
-CREATE TABLE recent_patients (
-    user_id varchar(40) NOT NULL,
-    patients TEXT,
-    PRIMARY KEY (user_id)
 ) ENGINE=InnoDB;

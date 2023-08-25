@@ -7,7 +7,7 @@ h1 {
   font-weight: bold;
 }
 
-#form-container {
+#form_container {
   background-color: #ffc;
   border: 1px solid var(--black);
   margin: 10px 0;
@@ -30,7 +30,7 @@ h1 {
 }
 
 .formtext {
-  font-family: courier, sans-serif;
+  font-family: courier;
   font-size: 90%;
 }
 
@@ -51,18 +51,23 @@ h1 {
   font-size: 110%;
 }
 
-#print-form-container {
+#print_form_container {
   background-color: #ffc;
   border: 1px solid var(--black);
   margin: 10px 0;
   padding: 10px;
 }
 
-#print-general {
+#print_general {
   padding: 10px;
 }
 
-#print-bottom {
+#print_history {
+  border-top: 1px solid var(--black);
+  padding: 10px;
+}
+
+#print_bottom {
   border-top: 1px solid var(--black);
   padding: 10px;
 }

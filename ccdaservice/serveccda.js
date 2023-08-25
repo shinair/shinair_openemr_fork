@@ -16,9 +16,6 @@ const server = net.createServer();
 const to_json = require('xmljson').to_json;
 const bbg = require(__dirname + '/oe-blue-button-generate');
 const fs = require('fs');
-const DataStack = require('./data-stack/data-stack').DataStack;
-const cleanCode = require('./utils/clean-code/clean-code').cleanCode;
-const safeTrim = require('./utils/safe-trim/safe-trim').safeTrim;
 
 var conn = ''; // make our connection scope global to script
 var oidFacility = "";
@@ -28,6 +25,61 @@ var npiFacility = "";
 var webRoot = "";
 var authorDateTime = '';
 var documentLocation = '';
+
+class DataStack {
+    constructor(delimiter) {
+        this.delimiter = delimiter;
+        this.buffer = "";
+    }
+
+    endOfCcda() {
+        return this.buffer.length === 0 || this.buffer.indexOf(this.delimiter) === -1;
+    }
+
+    pushToStack(data) {
+        this.buffer += data;
+    }
+
+    fetchBuffer() {
+        const delimiterIndex = this.buffer.indexOf(this.delimiter);
+        if (delimiterIndex !== -1) {
+            const bufferMsg = this.buffer.slice(0, delimiterIndex);
+            this.buffer = this.buffer.replace(bufferMsg + this.delimiter, "");
+            return bufferMsg;
+        }
+        return null
+    }
+
+    returnData() {
+        return this.fetchBuffer();
+    }
+
+    clearStack() {
+        this.buffer = "";
+    }
+
+    readStackByDelimiter(delimiter) {
+        let backup = this.delimiter;
+        let part = '';
+        this.delimiter = delimiter;
+        part = this.fetchBuffer();
+        this.delimiter = backup;
+        return part;
+    }
+}
+
+function trim(s) {
+    if (typeof s === 'string') return s.trim();
+    return s;
+}
+
+function cleanText(s) {
+    if (typeof s === 'string') {
+        //s = s.replace(new RegExp('\r?\n','g'), '<br />');
+        return s.trim();
+    }
+    return s;
+}
 
 // do a recursive descent transformation of the node object populating the timezone offset value if we have
 // a precision property (inside a date) with the value of timezone.
@@ -41,7 +93,7 @@ function populateTimezones(node, tzOffset, depthCheck) {
         return node;
     }
 
-    if (Object.prototype.hasOwnProperty.call(node, 'precision') && node.precision == 'tz' && !Object.prototype.hasOwnProperty.call(node, 'timezoneOffset')) {
+    if (node.hasOwnProperty('precision') && node.precision == 'tz' && !node.hasOwnProperty('timezoneOffset')) {
         node.timezoneOffset = tzOffset;
     } else {
         for (const [key, value] of Object.entries(node)) {
@@ -77,7 +129,10 @@ function fDate(str, lim8 = false) {
 
         let str1 = strDate + ' ' + strTime + '-' + strZone[1];
         return str1;
+    } else {
+        return str;
     }
+
     return str;
 }
 
@@ -105,16 +160,27 @@ function templateDate(date, precision) {
     return {'date': fDate(date), 'precision': precision}
 }
 
+function cleanCode(code) {
+    if (typeof code === 'undefined') {
+        return "null_flavor";
+    }
+    if (code.length < 1) {
+        code = "null_flavor";
+        return code;
+    }
+    return code.replace(/[.#]/, "");
+}
+
 function isOne(who) {
     try {
         if (who !== null && typeof who === 'object') {
-            return (Object.prototype.hasOwnProperty.call(who, 'npi')
-                || Object.prototype.hasOwnProperty.call(who, 'code')
-                || Object.prototype.hasOwnProperty.call(who, 'extension')
-                || Object.prototype.hasOwnProperty.call(who, 'id')
-                || Object.prototype.hasOwnProperty.call(who, 'date')
-                || Object.prototype.hasOwnProperty.call(who, 'use')
-                || Object.prototype.hasOwnProperty.call(who, 'type')
+            return (who.hasOwnProperty('npi')
+                || who.hasOwnProperty('code')
+                || who.hasOwnProperty('extension')
+                || who.hasOwnProperty('id')
+                || who.hasOwnProperty('date')
+                || who.hasOwnProperty('use')
+                || who.hasOwnProperty('type')
             ) ? 1 : Object.keys(who).length;
         }
     } catch (e) {
@@ -1138,9 +1204,9 @@ function populateProblem(pd) {
         }],
         "problem": {
             "code": {
-                "name": safeTrim(pd.title),
+                "name": trim(pd.title),
                 "code": cleanCode(pd.code),
-                "code_system_name": safeTrim(pd.code_type)
+                "code_system_name": trim(pd.code_type)
             },
             "date_time": {
                 "low": {
@@ -1521,7 +1587,7 @@ function getPlanOfCare(pd) {
 
     for (let key in all.encounter_list.encounter) {
         // skip loop if the property is from prototype
-        if (!Object.prototype.hasOwnProperty.call(all.encounter_list.encounter, key)) {
+        if (!all.encounter_list.encounter.hasOwnProperty(key)) {
             continue;
         }
         encounter = all.encounter_list.encounter[key];
@@ -1559,7 +1625,7 @@ function getPlanOfCare(pd) {
         }],
         "goal": {
             "code": cleanCode(pd.code) || "",
-            "name": safeTrim(pd.description) || ""
+            "name": cleanText(pd.description) || ""
         },
         "date_time": {
             "point": {
@@ -1635,7 +1701,7 @@ function getPlanOfCare(pd) {
             "status": status,
             "reason": encounter.encounter_reason
         }],
-        "name": safeTrim(pd.description),
+        "name": cleanText(pd.description),
         "mood_code": pd.moodCode
     };
 }
@@ -1716,7 +1782,7 @@ function getFunctionalStatus(pd) {
 
         "observation": {
             "value": {
-                "name": pd.code_text !== "NULL" ? safeTrim(pd.code_text) : "",
+                "name": pd.code_text !== "NULL" ? cleanText(pd.code_text) : "",
                 "code": cleanCode(pd.code) || "",
                 "code_system_name": pd.code_type || "SNOMED-CT"
             },
@@ -1747,7 +1813,7 @@ function getMentalStatus(pd) {
             "identifier": "9a6d1bac-17d3-4195-89a4-1121bc809ccc",
             "extension": pd.extension,
         }],
-        "note": safeTrim(pd.description),
+        "note": cleanText(pd.description),
         "date_time": {
             "low": templateDate(pd.date, "day")
             //"high": templateDate(pd.date, "day")
@@ -1795,7 +1861,7 @@ function getMentalStatus(pd) {
 
 function getAssessments(pd) {
     return {
-        "description": safeTrim(pd.description),
+        "description": cleanText(pd.description),
         "author": populateAuthorFromAuthorContainer(pd)
     };
 }
@@ -1831,7 +1897,7 @@ function getHealthConcerns(pd) {
     return {
         // todo need to make array of health concerns
         "type": "act",
-        "text": safeTrim(pd.text),
+        "text": cleanText(pd.text),
         "value": {
             "name": pd.code_text || "",
             "code": cleanCode(pd.code) || "",
@@ -1848,7 +1914,7 @@ function getHealthConcerns(pd) {
 
 function getReferralReason(pd) {
     return {
-        "reason": safeTrim(pd.text),
+        "reason": cleanText(pd.text),
         "author": populateAuthorFromAuthorContainer(pd)
     };
 }
@@ -2512,7 +2578,7 @@ function populateNote(pd) {
             name: pd.code_text || ""
         },
         "author": populateAuthorFromAuthorContainer(pd),
-        "note": safeTrim(pd.description),
+        "note": cleanText(pd.description),
     };
 }
 
@@ -3210,7 +3276,9 @@ function generateCcda(pd) {
         switch (pd.clinical_notes[currentNote].clinical_notes_type) {
             case 'evaluation_note':
                 continue;
+                break;
             case 'progress_note':
+
                 break;
             case 'history_physical':
                 pd.clinical_notes[currentNote].code_text = "History and Physical";
@@ -3374,28 +3442,22 @@ function processConnection(connection) {
         if (xml_complete.match(/^<CCDA/g) && xml_complete.match(/<\/CCDA>$/g)) {
             let doc = "";
             let xslUrl = "";
-            /* eslint-disable-next-line no-control-regex */
             xml_complete = xml_complete.replace(/(\u000b\u001c)/gm, "").trim();
-            xml_complete = xml_complete.replace(/\t\s+/g, " ").trim();
+            xml_complete = xml_complete.replace(/\t\s+/g, ' ').trim();
             // convert xml data set for document to json array
             to_json(xml_complete, function (error, data) {
                 if (error) {
-                    console.log(
-                        "toJson error: " + error + "Len: " + xml_complete.length
-                    );
-                    return "ERROR: Failed json build";
+                    console.log('toJson error: ' + error + 'Len: ' + xml_complete.length);
+                    return 'ERROR: Failed json build';
                 }
                 let unstructured = "";
                 let isUnstruturedData = !!data.CCDA.patient_files;
                 // extract unstructured documents file component templates. One per file.
                 if (isUnstruturedData) {
-                    unstructuredTemplate = xml_complete.substring(
-                        xml_complete.lastIndexOf("<patient_files>") + 15,
-                        xml_complete.lastIndexOf("</patient_files>")
-                    );
+                    unstructuredTemplate = xml_complete.substring(xml_complete.lastIndexOf('<patient_files>') + 15, xml_complete.lastIndexOf('</patient_files>'));
                 }
                 // create doc_type document i.e. CCD Referral etc.
-                if (data.CCDA.doc_type !== "unstructured") {
+                if (data.CCDA.doc_type !== 'unstructured') {
                     doc = generateCcda(data.CCDA);
                     if (data.CCDA.xslUrl) {
                         xslUrl = data.CCDA.xslUrl || "";
@@ -3411,10 +3473,7 @@ function processConnection(connection) {
                     doc += unstructured;
                 }
                 // auto build an Unstructured document of supplied embedded files.
-                if (
-                    data.CCDA.doc_type !== "unstructured" &&
-                    isUnstruturedData
-                ) {
+                if (data.CCDA.doc_type !== 'unstructured' && isUnstruturedData) {
                     unstructured = generateUnstructured(data.CCDA);
                     unstructured = headReplace(unstructured, xslUrl);
                     // combine the two documents to send back all at once.
@@ -3422,18 +3481,14 @@ function processConnection(connection) {
                 }
             });
             // send results back to eagerly awaiting CCM for disposal.
-            doc = doc
-                .toString()
-                /* eslint-disable-next-line no-control-regex */
-                .replace(/(\u000b\u001c|\r)/gm, "")
-                .trim();
+            doc = doc.toString().replace(/(\u000b\u001c|\r)/gm, "").trim();
             let chunk = "";
             let numChunks = Math.ceil(doc.length / 1024);
             for (let i = 0, o = 0; i < numChunks; ++i, o += 1024) {
                 chunk = doc.substring(o, o + 1024);
                 conn.write(chunk);
             }
-            conn.write(String.fromCharCode(28) + "\r\r" + "");
+            conn.write(String.fromCharCode(28) + "\r\r" + '');
             conn.end();
         }
     }
@@ -3452,7 +3507,7 @@ function processConnection(connection) {
     // CCM will send one File Separator characters to mark end of array.
     let received = new DataStack(String.fromCharCode(28));
     conn.on("data", data => {
-        received.push(data);
+        received.pushToStack(data);
         while (!received.endOfCcda() && data.length > 0) {
             data = "";
             eventData(received.returnData());

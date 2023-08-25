@@ -23,8 +23,6 @@ use OpenEMR\Validators\ProcessingResult;
 
 class UserService
 {
-    private $_includeUsername;
-
     /**
      * The name of the system user used for api requests.
      */
@@ -35,24 +33,6 @@ class UserService
      */
     public function __construct()
     {
-        $this->_includeUsername = false;
-    }
-
-    /**
-     * Sensitive fields in the database that are excluded by default from the service can be included here.
-     * Things such as username are normally excluded.
-     * @param $fields
-     * @return void
-     */
-    public function toggleSensitiveFields($fields)
-    {
-        foreach ($fields as $field) {
-            switch ($field) {
-                case 'username':
-                    $this->_includeUsername = !$this->_includeUsername;
-                    break;
-            }
-        }
     }
 
     public function getUuidFields()
@@ -254,11 +234,7 @@ class UserService
                         phonecell,
                         users.notes,
                         state_license_number,
-                        abook.title as abook_title";
-        if ($this->_includeUsername) {
-            $sql .= ", username";
-        }
-        $sql .= "
+                        abook.title as abook_title
                 FROM  users
                 LEFT JOIN list_options as abook ON abook.option_id = users.abook_type";
         $whereClause = FhirSearchWhereClauseBuilder::build($search, $isAndCondition);
@@ -319,11 +295,7 @@ class UserService
                         phonecell,
                         users.notes,
                         state_license_number,
-                        abook.title as abook_title";
-        if ($this->_includeUsername) {
-            $sql .= ", username";
-        }
-        $sql .= "
+                        abook.title as abook_title
                 FROM  users
                 LEFT JOIN list_options as abook ON abook.option_id = users.abook_type";
 

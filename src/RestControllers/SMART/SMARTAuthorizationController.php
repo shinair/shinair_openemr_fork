@@ -12,7 +12,6 @@
 namespace OpenEMR\RestControllers\SMART;
 
 use League\OAuth2\Server\Exception\OAuthServerException;
-use League\OAuth2\Server\RedirectUriValidators\RedirectUriValidator;
 use OpenEMR\Common\Http\Psr17Factory;
 use OpenEMR\Common\Acl\AccessDeniedException;
 use OpenEMR\Common\Auth\OpenIDConnect\Repositories\ClientRepository;
@@ -22,7 +21,6 @@ use OpenEMR\FHIR\SMART\SmartLaunchController;
 use OpenEMR\Services\PatientService;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
-use Twig\Environment;
 
 class SMARTAuthorizationController
 {
@@ -49,11 +47,6 @@ class SMARTAuthorizationController
      */
     private $oauthTemplateDir;
 
-    /**
-     * @var Environment The twig template engine
-     */
-    private $twig;
-
     const PATIENT_SELECT_PATH = "/smart/patient-select";
 
     const PATIENT_SELECT_CONFIRM_ENDPOINT = "/smart/patient-select-confirm";
@@ -65,21 +58,18 @@ class SMARTAuthorizationController
      */
     const PATIENT_SEARCH_MAX_RESULTS = 100;
 
-    const EHR_SMART_LAUNCH_AUTOSUBMIT = "/smart/ehr-launch-autosubmit";
-
 
     /**
      * SMARTAuthorizationController constructor.
      * @param $authBaseFullURL
      * @param $smartFinalRedirectURL The URL that should be redirected to once all SMART authorizations are complete.
      */
-    public function __construct(LoggerInterface $logger, $authBaseFullURL, $smartFinalRedirectURL, $oauthTemplateDir, Environment $twig)
+    public function __construct(LoggerInterface $logger, $authBaseFullURL, $smartFinalRedirectURL, $oauthTemplateDir)
     {
         $this->logger = $logger;
         $this->authBaseFullURL = $authBaseFullURL;
         $this->smartFinalRedirectURL = $smartFinalRedirectURL;
         $this->oauthTemplateDir = $oauthTemplateDir;
-        $this->twig = $twig;
     }
 
     /**
@@ -96,9 +86,6 @@ class SMARTAuthorizationController
             return true;
         }
         if (false !== stripos($end_point, self::PATIENT_SEARCH_ENDPOINT)) {
-            return true;
-        }
-        if (false !== stripos($end_point, self::EHR_SMART_LAUNCH_AUTOSUBMIT)) {
             return true;
         }
         return false;
@@ -124,23 +111,10 @@ class SMARTAuthorizationController
             // session is maintained
             $this->patientSearch();
             exit;
-        } else if (false !== stripos($end_point, self::EHR_SMART_LAUNCH_AUTOSUBMIT)) {
-            $this->ehrLaunchAutoSubmit();
-            exit;
         } else {
             $this->logger->error("SMARTAuthorizationController->dispatchRoute() called with invalid route. verify isValidRoute configured properly", ['end_point' => $end_point]);
             http_response_code(404);
         }
-    }
-
-    public function ehrLaunchAutoSubmit()
-    {
-        // grab the server query string and let's go back to our authorize endpoint
-        $endpoint = $this->authBaseFullURL . "/authorize?autosubmit=1&" . http_build_query($_GET);
-        $data = [
-            'endpoint' => $endpoint
-        ];
-        echo $this->twig->render("smart/ehr-launch-autosubmit.html.twig", $data);
     }
 
     /**
@@ -201,10 +175,8 @@ class SMARTAuthorizationController
         } catch (AccessDeniedException $error) {
             // or should we present some kind of error display form...
             $this->logger->error("AuthorizationController->patientSelect() Exception thrown", ['exception' => $error->getMessage(), 'userId' => $user_uuid]);
-            // make sure to grab the redirect uri before the session is destroyed
-            $redirectUri = $this->getClientRedirectURI();
             SessionUtil::oauthSessionCookieDestroy();
-            $error = OAuthServerException::accessDenied("No access to patient data for this user", $redirectUri, $error);
+            $error = OAuthServerException::accessDenied("No access to patient data for this user", $this->getClientRedirectURI(), $error);
             $response = (new Psr17Factory())->createResponse();
             $this->emitResponse($error->generateHttpResponse($response));
         } catch (\Exception $error) {
@@ -251,11 +223,10 @@ class SMARTAuthorizationController
 
             require_once($this->oauthTemplateDir . "smart/patient-select.php");
         } catch (AccessDeniedException $error) {
-            // make sure to grab the redirect uri before the session is destroyed
-            $redirectUri = $this->getClientRedirectURI();
             $this->logger->error("AuthorizationController->patientSelect() Exception thrown", ['exception' => $error->getMessage(), 'userId' => $user_uuid]);
             SessionUtil::oauthSessionCookieDestroy();
-            $error = OAuthServerException::accessDenied("No access to patient data for this user", $redirectUri, $error);
+
+            $error = OAuthServerException::accessDenied("No access to patient data for this user", $this->getClientRedirectURI(), $error);
             $response = (new Psr17Factory())->createResponse();
             $this->emitResponse($error->generateHttpResponse($response));
         } catch (\Exception $error) {
@@ -296,21 +267,7 @@ class SMARTAuthorizationController
         $client_id = $_SESSION['client_id'];
         $repo = new ClientRepository();
         $client = $repo->getClientEntity($client_id);
-        $uriList = $client->getRedirectUri();
-        $uri = $uriList;
-        if (is_array($uriList) && !empty($uriList)) {
-            $validator = new RedirectUriValidator($uri);
-            $uri = $uriList[0]; // we grab the first one if we don't have one in the session already
-
-            // this is probably overly paranoid but we want to safeguard against any session tampering and use the same logic
-            // to validate the redirect_uri as we do elsewhere in the system
-            // if we have multiple redirect_uris and we have the redirect uri in our session
-            if (!empty($_SESSION['redirect_uri'])) {
-                if ($validator->validateRedirectUri($_SESSION['redirect_uri'])) {
-                    $uri = $_SESSION['redirect_uri'];
-                }
-            }
-        }
+        $uri = $client->getRedirectUri();
         return $uri;
     }
 }

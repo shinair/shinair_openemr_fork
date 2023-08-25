@@ -91,7 +91,8 @@ export function VideoBar(container, options)
 
     function setDefaultValue(obj, property, value)
     {
-        if (!Object.prototype.hasOwnProperty.call(obj, property)) {
+        if (!obj.hasOwnProperty(property))
+        {
             obj[property] = value;
         }
     }

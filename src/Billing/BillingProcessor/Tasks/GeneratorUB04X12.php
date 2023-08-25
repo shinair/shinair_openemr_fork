@@ -41,16 +41,7 @@ class GeneratorUB04X12 extends AbstractGenerator implements GeneratorInterface, 
     {
         // Do the UB04 processing
         $log = '';
-        $segs = explode(
-            "~\n",
-            X125010837I::generateX12837I(
-                $claim->getPid(),
-                $claim->getEncounter(),
-                $claim->getPartner(),
-                $log,
-                $this->ub04id
-            )
-        );
+        $segs = explode("~\n", X125010837I::generateX12837I($claim->getPid(), $claim->getEncounter(), $log, $this->ub04id));
         $this->appendToLog($log);
         $this->batch->append_claim($segs);
 
@@ -69,7 +60,6 @@ class GeneratorUB04X12 extends AbstractGenerator implements GeneratorInterface, 
 
     public function validateOnly(BillingClaim $claim)
     {
-        $this->printToScreen(xl("Successfully validated claim") . ": " . $claim->getId());
         return $this->updateBatch($claim);
     }
 
@@ -106,7 +96,7 @@ class GeneratorUB04X12 extends AbstractGenerator implements GeneratorInterface, 
      */
     public function generate(BillingClaim $claim)
     {
-        $this->validateAndClear($claim);
+        $this->validateAndClear();
 
         $tmp = BillingUtilities::updateClaim(
             false,

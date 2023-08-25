@@ -21,8 +21,7 @@ function questionnaire_assessments_report($pid, $encounter, $cols, $id)
 {
     $form = formFetch("form_questionnaire_assessments", $id);
     if (!$form) {
-        echo xlt('Nothing to report.');
-        return;
+        die(xlt('Nothing to report.'));
     }
     $responseService = new QuestionnaireResponseService();
     try {

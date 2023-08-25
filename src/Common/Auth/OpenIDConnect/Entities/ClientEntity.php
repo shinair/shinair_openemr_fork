@@ -54,15 +54,9 @@ class ClientEntity implements ClientEntityInterface
 
     protected $registrationDate;
 
-    /**
-     * @var bool true if the authorization flow (authentication and scope authorization) should be skipped for logged in ehr users
-     */
-    private $skipEHRLaunchAuthorizationFlow;
-
     public function __construct()
     {
         $this->scopes = [];
-        $this->skipEHRLaunchAuthorizationFlow = false;
     }
 
     public function setName($name): void
@@ -72,13 +66,7 @@ class ClientEntity implements ClientEntityInterface
 
     public function setRedirectUri($uri): void
     {
-        if (\is_string($uri)) {
-            $this->redirectUri = [$uri];
-        } else if (\is_array($uri)) {
-            $this->redirectUri = $uri;
-        } else {
-            throw new \InvalidArgumentException("redirectUri must be a string or array");
-        }
+        $this->redirectUri = $uri;
     }
 
     public function setIsConfidential($set): void
@@ -247,19 +235,5 @@ class ClientEntity implements ClientEntityInterface
     public function setLogoutRedirectUris(?string $logoutRedirectUris): void
     {
         $this->logoutRedirectUris = $logoutRedirectUris;
-    }
-
-    /**
-     * Whether the ehr launch should skip the authorization flow for a logged in user.
-     * @return bool
-     */
-    public function shouldSkipEHRLaunchAuthorizationFlow(): bool
-    {
-        return $this->skipEHRLaunchAuthorizationFlow;
-    }
-
-    public function setSkipEHRLaunchAuthorizationFlow(bool $shouldSkip)
-    {
-        $this->skipEHRLaunchAuthorizationFlow = $shouldSkip;
     }
 }

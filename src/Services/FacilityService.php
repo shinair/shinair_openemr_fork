@@ -287,8 +287,7 @@ class FacilityService extends BaseService
             $sql .= "        FAC.mail_zip,";
             $sql .= "        FAC.oid,";
             $sql .= "        FAC.iban,";
-            $sql .= "        FAC.info,";
-            $sql .= "        FAC.inactive";
+            $sql .= "        FAC.info";
             $sql .= " FROM facility FAC";
 
             $records = self::selectHelper($sql, $map);

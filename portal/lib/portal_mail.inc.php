@@ -12,23 +12,6 @@
 
 use OpenEMR\Common\Logging\EventAuditLogger;
 
-/**
- * @param $owner
- * @param $newtext
- * @param $authorized
- * @param $activity
- * @param $title
- * @param $assigned_to
- * @param $datetime
- * @param $message_status
- * @param $master_note
- * @param $sid
- * @param $sn
- * @param $rid
- * @param $rn
- * @param $replyid
- * @return int
- */
 function addPortalMailboxMail(
     $owner,
     $newtext,
@@ -44,7 +27,7 @@ function addPortalMailboxMail(
     $rid = '',
     $rn = '',
     $replyid = 0
-): int {
+) {
 
     if (empty($datetime)) {
         $datetime = date('Y-m-d H:i:s');
@@ -83,14 +66,7 @@ function addPortalMailboxMail(
     );
 }
 
-/**
- * @param $owner
- * @param $limit
- * @param $offset
- * @param $search
- * @return array
- */
-function getPortalPatientDeleted($owner = '', $limit = '', $offset = 0, $search = ''): array
+function getPortalPatientDeleted($owner = '', $limit = '', $offset = 0, $search = '')
 {
     if ($limit) {
         $limit = "LIMIT " . escape_limit($offset) . ", " . escape_limit($limit);
@@ -133,14 +109,7 @@ function getPortalPatientDeleted($owner = '', $limit = '', $offset = 0, $search 
     return $all;
 }
 
-/**
- * @param $owner
- * @param $limit
- * @param $offset
- * @param $search
- * @return array
- */
-function getPortalPatientNotes($owner = '', $limit = '', $offset = 0, $search = ''): array
+function getPortalPatientNotes($owner = '', $limit = '', $offset = 0, $search = '')
 {
     if ($limit) {
         $limit = "LIMIT " . escape_limit($offset) . ", " . escape_limit($limit);
@@ -183,14 +152,7 @@ function getPortalPatientNotes($owner = '', $limit = '', $offset = 0, $search = 
     return $all;
 }
 
-/**
- * @param $owner
- * @param $limit
- * @param $offset
- * @param $search
- * @return array
- */
-function getPortalPatientNotifications($owner = '', $limit = '', $offset = 0, $search = ''): array
+function getPortalPatientNotifications($owner = '', $limit = '', $offset = 0, $search = '')
 {
     if ($limit) {
         $limit = "LIMIT " . escape_limit($offset) . ", " . escape_limit($limit);
@@ -229,14 +191,7 @@ function getPortalPatientNotifications($owner = '', $limit = '', $offset = 0, $s
     return $all;
 }
 
-/**
- * @param $owner
- * @param $limit
- * @param $offset
- * @param $search
- * @return array
- */
-function getPortalPatientSentNotes($owner = '', $limit = '', $offset = 0, $search = ''): array
+function getPortalPatientSentNotes($owner = '', $limit = '', $offset = 0, $search = '')
 {
     if ($limit) {
         $limit = "LIMIT " . escape_limit($offset) . ", " . escape_limit($limit);
@@ -278,13 +233,7 @@ function getPortalPatientSentNotes($owner = '', $limit = '', $offset = 0, $searc
     return $all;
 }
 
-/**
- * @param $id
- * @param $message_status
- * @param $owner
- * @return void
- */
-function updatePortalMailMessageStatus($id, $message_status, $owner): void
+function updatePortalMailMessageStatus($id, $message_status, $owner)
 {
     if ($message_status == "Done") {
         sqlStatement("update onsite_mail set message_status = ?, activity = '0' where id = ? and `owner` = ?", array($message_status, $id, $owner));
@@ -309,13 +258,6 @@ function updatePortalMailMessageStatus($id, $message_status, $owner): void
     }
 }
 
-/**
- * @param $owner
- * @param $dotype
- * @param $nsrch
- * @param $nfsrch
- * @return array|string|void
- */
 function getMails($owner, $dotype, $nsrch, $nfsrch)
 {
     if ($owner) {
@@ -356,21 +298,7 @@ function getMails($owner, $dotype, $nsrch, $nfsrch)
     }
 }
 
-/**
- * @param $owner
- * @param $note
- * @param $title
- * @param $to
- * @param $noteid
- * @param $sid
- * @param $sn
- * @param $rid
- * @param $rn
- * @param $status
- * @param $replyid
- * @return int|string
- */
-function sendMail($owner, $note, $title, $to, $noteid, $sid, $sn, $rid, $rn, $status = 'New', $replyid = ''): int|string
+function sendMail($owner, $note, string $title = null, $to, $noteid, $sid, $sn, $rid, $rn, $status = 'New', $replyid = '')
 {
     if (!$title) {
         $title = 'Unassigned';

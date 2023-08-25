@@ -602,7 +602,6 @@ class ScopeRepository implements ScopeRepositoryInterface
             "user/surgery.write",
             "user/transaction.read",
             "user/transaction.write",
-            "user/user.read",
             "user/vital.read",
             "user/vital.write",
         ];

@@ -21,9 +21,7 @@ use OpenEMR\Services\Search\SearchFieldException;
 use OpenEMR\Services\Search\SearchFieldStatementResolver;
 use OpenEMR\Validators\ProcessingResult;
 use Particle\Validator\Exception\InvalidValueException;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 require_once(__DIR__  . '/../../custom/code_types.inc.php');
 
@@ -55,11 +53,6 @@ class BaseService
     );
 
     /**
-     * @var EventDispatcher
-     */
-    private $eventDispatcher;
-
-    /**
      * Default constructor.
      */
     public function __construct($table)
@@ -68,17 +61,6 @@ class BaseService
         $this->fields = sqlListFields($table);
         $this->autoIncrements = self::getAutoIncrements($table);
         $this->setLogger(new SystemLogger());
-        $this->eventDispatcher = $GLOBALS['kernel']->getEventDispatcher();
-    }
-
-    public function getEventDispatcher(): EventDispatcher
-    {
-        return $this->eventDispatcher;
-    }
-
-    public function setEventDispatcher(EventDispatcher $dispatcher)
-    {
-        $this->eventDispatcher = $dispatcher;
     }
 
     /**
@@ -265,13 +247,7 @@ class BaseService
             if ($value == 'YYYY-MM-DD' || $value == 'MM/DD/YYYY') {
                 $value = "";
             }
-            if (
-                (
-                    $value === null
-                    || $value === false
-                )
-                && (strpos($key, 'date') === false)
-            ) {
+            if ($value === null || $value === false) {
                 // in case unwanted values passed in.
                 continue;
             }

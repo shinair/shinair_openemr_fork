@@ -122,10 +122,10 @@ class CarePlanService extends BaseService
         }
         // override puuid, this replaces anything in search if it is already specified.
         if (isset($puuidBind)) {
-            $newSearch['puuid'] = new TokenSearchField('puuid', $puuidBind, true);
+            $search['puuid'] = new TokenSearchField('puuid', $puuidBind, true);
         }
 
-        return $this->search($newSearch, $isAndCondition);
+        return $this->search($search, $isAndCondition);
     }
 
     public function search($search, $isAndCondition = true)

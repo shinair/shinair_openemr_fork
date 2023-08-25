@@ -9,7 +9,7 @@
  * @author Stephen Waite <stephen.waite@cmsvt.com>
  * @author Daniel Pflieger <daniel@mi-squared.com>, <daniel@growlingflea.com>
  * @copyright Copyright (c) 2009 Rod Roark <rod@sunsetsystems.com>
- * @copyright Copyright (c) 2018-2023 Stephen Waite <stephen.waite@cmsvt.com>
+ * @copyright Copyright (c) 2018-2021 Stephen Waite <stephen.waite@cmsvt.com>
  * @copyright Copyright (c) 2021 Daniel Pflieger <daniel@mi-squared.com>, <daniel@growlingflea.com>
  * @link https://github.com/openemr/openemr/tree/master
  * @license https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
@@ -24,7 +24,6 @@ class X125010837P
     /*
      * @param  $pid
      * @param  $encounter
-     * @param  $x12_partner
      * @param  $log
      * @param  false $encounter_claim
      * @param  $SEFLAG
@@ -34,22 +33,25 @@ class X125010837P
      * @return string|string[]|null
      */
 
-    // removed $HLBillingPayToProvider until it's supported in the generators
     public static function genX12837P(
         $pid,
         $encounter,
-        $x12_partner,
         &$log,
         $encounter_claim = false,
         $SEFLAG = false,
         $HLcount = 0,
         &$edicount = 0,
-        &$patSegmentCount = 0
+        $HLBillingPayToProvider = 1
     ) {
         $today = time();
         $out = '';
-        $claim = new Claim($pid, $encounter, $x12_partner);
+        $claim = new Claim($pid, $encounter);
 
+        if ($GLOBALS['gen_x12_based_on_ins_co']) {
+            $log .= "Generating directly to insurance claim $pid" . "-" . $encounter . " for ";
+        } else {
+            $log .= "Generating claim $pid" . "-" . $encounter . " for ";
+        }
         $log .= $claim->patientFirstName() . ' ' .
         $claim->patientMiddleName() . ' ' .
         $claim->patientLastName() . ' on ' .
@@ -159,7 +161,7 @@ class X125010837P
                     "*" .
                     "*" .
                     "*" . "46" .
-                    "*" . $claim->billingIdCode();
+                    "*" . $claim->x12_sender_id();
                 // else use provider's group name
                 } else {
                     $billingFacilityName = substr($claim->billingFacilityName(), 0, 60);
@@ -207,6 +209,7 @@ class X125010837P
                 "~\n";
 
             ++$edicount;
+            ++$HLcount;
 
             $out .= "HL" . // Loop 2000A Billing/Pay-To Provider HL Loop
             "*" . $HLcount .
@@ -214,6 +217,12 @@ class X125010837P
             "*" . "20" .
             "*" . "1" . // 1 indicates there are child segments
             "~\n";
+
+            if (
+                empty($GLOBALS['gen_x12_based_on_ins_co'])
+            ) {
+                $HLBillingPayToProvider = $HLcount++;
+            }
 
             // Situational PRV segment for provider taxonomy.
             if ($claim->facilityTaxonomy()) {
@@ -372,21 +381,13 @@ class X125010837P
             // NM1*PE, N3, N4, REF*2U, REF*EI
         }
 
-        if (!empty($GLOBALS['gen_x12_based_on_ins_co'])) {
-            $HLcount += $patSegmentCount;
-        }
-
-        $HLcount++;
-
         $PatientHL = $claim->isSelfOfInsured() ? 0 : 1;
         $HLSubscriber = $HLcount++;
 
         ++$edicount;
-
-        // replaced $HLBillingPayToProvider with 1 until it's supported in the generators
         $out .= "HL" .        // Loop 2000B Subscriber HL Loop
             "*" . $HLSubscriber .
-            "*" . "1" .
+            "*" . $HLBillingPayToProvider .
             "*" . "22" .
             "*" . $PatientHL .
             "~\n";
@@ -552,15 +553,13 @@ class X125010837P
         }
         $out .= "*";
         if (
-            !(
-                (strlen($claim->payerZip()) == 5)
-                || (strlen($claim->payerZip()) == 9)
-            )
+            (strlen($claim->payerZip()) == 5)
+            || (strlen($claim->payerZip()) == 9)
         ) {
+            $out .= $claim->x12Zip($claim->payerZip());
+        } else {
             $log .= "*** Payer zip is not 5 or 9 digits.\n";
         }
-
-        $out .= $claim->x12Zip($claim->payerZip());
         $out .= "~\n";
 
         // Segment REF (Payer Secondary Identification) omitted.
@@ -873,7 +872,7 @@ class X125010837P
         // Segment HI*BP (Anesthesia Related Procedure) omitted.
         // Segment HI*BG (Condition Information) omitted.
         // Segment HCP (Claim Pricing/Repricing Information) omitted.
-        if ($claim->referrer ?? null) {
+        if ($claim->referrerLastName()) {
             // Medicare requires referring provider's name and NPI.
             ++$edicount;
             $out .= "NM1" .     // Loop 2310A Referring Provider
@@ -947,8 +946,9 @@ class X125010837P
             } else {
                 $log .= "*** Performing provider has no taxonomy code.\n";
             }
+        } else {
+            $log .= "*** Rendering provider is billing under a group.\n";
         }
-
         if (!$claim->providerNPIValid()) {
             // If the loop was skipped because the provider NPI was invalid, generate a warning for the log.
             $log .= "*** Skipping 2310B because " . $claim->providerLastName() .
@@ -1022,10 +1022,11 @@ class X125010837P
                 $log .= "*** Missing service facility state.\n";
             }
             $out .= "*";
-            if (strlen($claim->facilityZip()) != 9) {
+            if (strlen($claim->facilityZip()) == 9) {
+                $out .= $claim->facilityZip();
+            } else {
                 $log .= "*** Service facility zip is not 9 digits.\n";
             }
-            $out .= $claim->facilityZip();
             $out .= "~\n";
         }
         // Segment REF (Service Facility Location Secondary Identification) omitted.
@@ -1069,12 +1070,6 @@ class X125010837P
 
         for ($ins = 1; $ins < $claim->payerCount(); ++$ins) {
             $tmp1 = $claim->claimType($ins);
-
-            // if the ins is unassigned don't include this SBR/OI loop
-            if ($tmp1 === '09') {
-                continue;
-            }
-
             $tmp2 = 'C1'; // Here a kludge. See page 321.
             if ($tmp1 === 'CI') {
                 $tmp2 = 'C1';
@@ -1200,15 +1195,13 @@ class X125010837P
             }
             $out .= "*";
             if (
-                !(
-                    (strlen($claim->insuredZip($ins)) == 5)
-                    || (strlen($claim->insuredZip($ins) == 9))
-                )
+                strlen($claim->insuredZip($ins)) == 5
+                || strlen($claim->insuredZip($ins)) == 9
             ) {
+                $out .= $claim->insuredZip($ins);
+            } else {
                 $log .= "*** Other insco insured zip is not 5 or 9 digits.\n";
             }
-
-            $out .= $claim->x12Zip($claim->insuredZip($ins));
             $out .= "~\n";
 
             // Segment REF (Other Subscriber Secondary Identification) omitted.
@@ -1262,15 +1255,13 @@ class X125010837P
             }
             $out .= "*";
             if (
-                !(
-                    (strlen($claim->payerZip($ins)) == 5)
-                    || (strlen($claim->payerZip() == 9))
-                )
+                (strlen($claim->payerZip($ins)) == 5)
+                || (strlen($claim->payerZip() == 9))
             ) {
+                $out .= $claim->x12Zip($claim->payerZip($ins));
+            } else {
                 $log .= "*** Other payer zip is not 5 or 9 digits.\n";
             }
-
-            $out .= $claim->x12Zip($claim->payerZip($ins));
             $out .= "~\n";
 
             // Segment DTP*573 (Claim Check or Remittance Date) omitted.

@@ -177,6 +177,33 @@ $GLOBALS_METADATA = array(
     //
     'Appearance' => array(
 
+        'default_top_pane' => array(
+            xl('Main Top Pane Screen(Or Default First Tab)'),       // descriptive name
+            array(
+                'main_info.php' => xl('Calendar Screen'),
+                '../new/new.php' => xl('Patient Search/Add Screen'),
+                '../../interface/main/finder/dynamic_finder.php' => xl('Patient Finder Screen'),
+                '../../interface/patient_tracker/patient_tracker.php?skip_timeout_reset=1' => xl('Patient Flow Board'),
+                '../../interface/main/messages/messages.php?form_active=1' => xl('Messages Screen')
+            ),
+            'main_info.php',                  // default = calendar
+            xl('Main Top Pane Screen(Or Default First Tab)')
+        ),
+
+        'default_second_tab' => array(
+            xl('Default Second Tab'),       // descriptive name
+            array(
+                '' => xl('None'),
+                '../../interface/main/messages/messages.php?form_active=1' => xl('Messages Screen'),
+                'main_info.php' => xl('Calendar Screen'),
+                '../new/new.php' => xl('Patient Search/Add Screen'),
+                '../../interface/main/finder/dynamic_finder.php' => xl('Patient Finder Screen'),
+                '../../interface/patient_tracker/patient_tracker.php?skip_timeout_reset=1' => xl('Patient Flow Board'),
+            ),
+            '../../interface/main/messages/messages.php?form_active=1',    // default = messages
+            xl('Default Second Tab')
+        ),
+
         'theme_tabs_layout' => array(
             xl('Tabs Layout Theme') . '*',
             'tabs_css',
@@ -238,6 +265,13 @@ $GLOBALS_METADATA = array(
             xl('Choose your default encounter view')
         ),
 
+        'gbl_nav_area_width' => array(
+            xl('Navigation Area Width for Frames'),
+            'num',
+            '175',
+            xl('Width in pixels of the left navigation frame in frame based layout.')
+        ),
+
         'enable_group_therapy' => array(
             xl('Enable Group Therapy'),
             'bool',                           // data type
@@ -278,6 +312,13 @@ $GLOBALS_METADATA = array(
             ),
             '0',                              // default
             xl('Type of columns displayed for patient search results')
+        ),
+
+        'gbl_tall_nav_area' => array(
+            xl('Tall Navigation Area'),
+            'bool',                           // data type
+            '0',                              // default = false
+            xl('Navigation area uses full height of frameset')
         ),
 
         'gbl_nav_visit_forms' => array(
@@ -382,13 +423,6 @@ $GLOBALS_METADATA = array(
             '3',
             xl('This is the number of messages that will be displayed in the messages widget in the patient summary screen.')
         ),
-
-        'recent_patient_count' => [
-            xl('Maximum number of patients on Recent Patient list'),
-            'num',
-            '20',
-            xl('The maximum number of patients on the Recent Patient list'),
-        ],
 
         'gbl_vitals_options' => array(
             xl('Vitals Form Options'),
@@ -511,40 +545,6 @@ $GLOBALS_METADATA = array(
             xl('Changes the layout of the login page.')
         ),
 
-        'primary_logo_width' => [
-            xl('Width of primary logo compared to the container'),
-            [
-                'w-25' => '25%',
-                'w-50' => '50%',
-                'w-75' => '75%',
-                'w-100' => '100%'
-            ],
-            'w-50',
-            xl('Determine the width of the primary logo compared to the container'),
-        ],
-
-        'secondary_logo_width' => [
-            xl('Width of secondary logo compared to the container'),
-            [
-                'w-25' => '25%',
-                'w-50' => '50%',
-                'w-75' => '75%',
-                'w-100' => '100%'
-            ],
-            'w-50',
-            xl('Determine the width of the secondary logo compared to the container'),
-        ],
-
-        'logo_position' => [
-            xl('Logo Positioning'),
-            [
-                'flex-column' => 'Stacked',
-                'flex-row' => 'Side by Side',
-            ],
-            'flex-column',
-            xl('How the logos will be rendered relative to each other'),
-        ],
-
         'display_acknowledgements_on_login' => [
             xl('Display links to the acknowledgements page'),
             'bool',
@@ -579,13 +579,6 @@ $GLOBALS_METADATA = array(
             '0',                              // default = false
             xl('Show Title on Login')
         ),
-
-        'show_primary_logo' => [
-            xl('Show primary logo on login'),
-            'bool',
-            '1',
-            xl('Show primary logo on login'),
-        ],
 
         'extra_logo_login' => array(
             xl('Show Secondary Logo on Login'),
@@ -2155,31 +2148,10 @@ $GLOBALS_METADATA = array(
         ),
 
         'password_max_failed_logins' => array(
-            xl('Maximum Failed Login Attempts For User'),
+            xl('Maximum Failed Login Attempts'),
             'num',                            // data type
-            '20',                             // default
-            xl('Maximum Failed Login Attempts For User (0 for no maximum).')
-        ),
-
-        'time_reset_password_max_failed_logins' => array(
-            xl('Time (seconds) to Reset Maximum Failed Login Attempts For User'),
-            'num',                            // data type
-            '3600',                           // default to 1 hour
-            xl('Time (seconds) to Reset Maximum Failed Login Attempts Counter For User (0 for no reset).')
-        ),
-
-        'ip_max_failed_logins' => array(
-            xl('Maximum Failed Login Attempts From IP Address'),
-            'num',                            // data type
-            '100',                            // default
-            xl('Maximum Failed Login Attempts From IP Address (0 for no maximum).')
-        ),
-
-        'ip_time_reset_password_max_failed_logins' => array(
-            xl('Time (seconds) to Reset Maximum Failed Login Attempts From IP Address'),
-            'num',                            // data type
-            '3600',                           // default to 1 hour
-            xl('Time (seconds) to Reset Maximum Failed Login Attempts Counter From IP Address (0 for no reset).')
+            '0',                              // default
+            xl('Maximum Failed Login Attempts (0 for no maximum).')
         ),
 
         'gbl_fac_warehouse_restrictions' => array(
@@ -3078,16 +3050,6 @@ $GLOBALS_METADATA = array(
             xl('Website link for the Patient Portal.')
         ),
 
-        'portal_css_header' => array(
-            xl('Portal Default Theme'),
-            array(
-                'style_light.css' => xl('Light'),
-                'style_dark.css' => xl('Dark')
-            ),
-            'style_light.css',
-            xl('Pick a default portal theme.')
-        ),
-
         'portal_onsite_two_basepath' => array(
             xl('Portal Uses Server Base Path (internal)'),
             'bool',
@@ -3115,13 +3077,6 @@ $GLOBALS_METADATA = array(
             '',
             xl('Google reCAPTCHA V2 secret key')
         ),
-
-        'portal_primary_menu_logo_height' => [
-            xl('Primary Menu Logo Height'),
-            'text',
-            '30',
-            xl('The height of the portal logo located on the primary navbar in pixels without a suffix'),
-        ],
 
         'portal_onsite_two_register' => array(
             xl('Allow New Patient Registration Widget') . ' ' . xl('This requires reCAPTCHA to be setup'),
@@ -3232,12 +3187,6 @@ $GLOBALS_METADATA = array(
             ),
             '0',
             xl('Approval settings for 3rd party app/api access')
-        ),
-        'oauth_ehr_launch_authorization_flow_skip' => array(
-            xl('OAuth2 EHR-Launch Authorization Flow Skip Enable App Setting'),
-            'bool',
-            '0',
-            xl('Enable an OAuth2 Client application to be configured to skip the login screen and the scope authorization screen if the user is already logged into the EHR.')
         ),
 
         'cc_front_payments' => array(

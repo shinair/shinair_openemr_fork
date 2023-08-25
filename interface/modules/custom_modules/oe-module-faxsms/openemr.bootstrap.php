@@ -22,14 +22,10 @@
  for an existing service type and vendor service.
  */
 
-use OpenEMR\Events\Messaging\SendNotificationEvent;
 use OpenEMR\Events\Messaging\SendSmsEvent;
 use OpenEMR\Events\PatientDocuments\PatientDocumentEvent;
 use OpenEMR\Events\PatientReport\PatientReportEvent;
 use OpenEMR\Menu\MenuEvent;
-use OpenEMR\Modules\FaxSMS\Controller\AppDispatch;
-use OpenEMR\Modules\FaxSMS\Events\NotificationEventListener;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 
@@ -49,11 +45,6 @@ $classLoader->registerNamespaceIfNotExists('OpenEMR\\Modules\\FaxSMS\\', __DIR__
  * @global                       $eventDispatcher @see ModulesApplication::loadCustomModule
  * @global                       $module          @see ModulesApplication::loadCustomModule
  */
-
-/**
- * @global EventDispatcher $dispatcher Injected by the OpenEMR module loader;
- */
-$dispatcher = $GLOBALS['kernel']->getEventDispatcher();
 
 // Add menu items
 function oe_module_faxsms_add_menu_item(MenuEvent $event): MenuEvent
@@ -141,7 +132,7 @@ function oe_module_faxsms_patient_report_render_javascript_post_load(Event $even
     <?php
 }
 // patient documents fax anchor
-function oe_module_faxsms_document_render_action_anchors(Event $event): void
+function oe_module_faxsms_document_render_action_anchors(Event $event)
 {
     ?>
     <a class="btn btn-success btn-sm btn-send-msg" href="" onclick="return doFax(event,file,mime)">
@@ -150,7 +141,7 @@ function oe_module_faxsms_document_render_action_anchors(Event $event): void
     <?php
 }
 
-function oe_module_faxsms_document_render_javascript_fax_dialog(Event $event): void
+function oe_module_faxsms_document_render_javascript_fax_dialog(Event $event)
 {
     ?>
     function doFax(e, filePath, mime='') {
@@ -167,62 +158,36 @@ function oe_module_faxsms_document_render_javascript_fax_dialog(Event $event): v
 // send sms button
 function oe_module_faxsms_sms_render_action_buttons(Event $event): void
 {
-    ?>
-    <button type="button" class="sendsms btn btn-success btn-send-msg"
-        onclick="sendSMS(
-        <?php echo attr_js($event->getPid()); ?>,
-        <?php echo attr_js($event->getRecipientPhone()); ?>
-        );"
-        value="true"><?php echo xlt('Send SMS'); ?></button>
-<?php }
-
-function oe_module_faxsms_sms_render_javascript_post_load(Event $event): void
-{
-    ?>
-function sendSMS(pid, phone) {
-    let btnClose = <?php echo xlj("Cancel"); ?>;
-    let title = <?php echo xlj("Send SMS Message"); ?>;
-    let url = top.webroot_url +
-        '/interface/modules/custom_modules/oe-module-faxsms/contact.php?type=sms&isSMS=1&pid=' + encodeURIComponent(pid) +
-        '&recipient=' + encodeURIComponent(phone);
-    dlgopen(url, '', 'modal-sm', 700, '', title, {
-    buttons: [{text: btnClose, close: true, style: 'secondary'}]
-    });
-}
-<?php }
-
-// SMS and/or Email send notification
-
-function notificationButton(Event $notificationEvent): void
-{
-    ?>
+    if (!$event->smsAuthorised) {
+        return;
+    } ?>
     <button type="button" class="sendsms btn btn-success btn-sm btn-send-msg"
-        onclick="sendNotification(
-        <?php echo attr_js($notificationEvent->getPid()); ?>,
-        <?php echo attr_js($notificationEvent->getDocumentName()); ?>,
-        <?php echo attr_js($notificationEvent->getPatientDetails()); ?>
+        onclick="sendSMS(
+        <?php echo attr_js($event->pid) ?>,
+        <?php echo attr_js($event->title) ?>,
+        <?php echo attr_js($event->getPatientDetails(null, true)) ?>
             );"
         value="true"><?php echo xlt('Notify'); ?></button>
     <?php
 }
 
-function notificationDialogFunction(Event $event): void
+function oe_module_faxsms_sms_render_javascript_post_load(Event $event): void
 {
     ?>
-function sendNotification(pid, docName, details) {
-    let btnClose = <?php echo xlj("Cancel"); ?>;
-    let title = <?php echo xlj("Send Message"); ?>;
-    let url = top.webroot_url +
-    '/interface/modules/custom_modules/oe-module-faxsms/contact.php?type=sms&isSMS=1&isNotification=1&pid=' +
-    encodeURIComponent(pid) +
-    '&title=' + encodeURIComponent(docName) +
-    '&details=' + encodeURIComponent(details);
-    dlgopen(url, '', 'modal-sm', 700, '', title, {
-    buttons: [{text: btnClose, close: true, style: 'secondary'}]
-    });
-}
+    function sendSMS(pid, docName, details) {
+        let btnClose = <?php echo xlj("Cancel"); ?>;
+        let title = <?php echo xlj("Send SMS Message"); ?>;
+        let url = top.webroot_url +
+            '/interface/modules/custom_modules/oe-module-faxsms/contact.php?type=sms&isSMS=1&pid=' +
+            encodeURIComponent(pid) +
+            '&title=' + encodeURIComponent(docName) +
+            '&details=' + encodeURIComponent(details);
+        dlgopen(url, '', 'modal-sm', 700, '', title, {
+        buttons: [{text: btnClose, close: true, style: 'secondary'}]
+        });
+    }
 <?php }
-
+// If any more events in future will probably refactor these to BootstrapService class.
 // We also have a drop box in the user interface. Could be an event for elsewhere.
 if ($allowFax) {
     // patient report
@@ -232,14 +197,8 @@ if ($allowFax) {
     $eventDispatcher->addListener(PatientDocumentEvent::ACTIONS_RENDER_FAX_ANCHOR, 'oe_module_faxsms_document_render_action_anchors');
     $eventDispatcher->addListener(PatientDocumentEvent::JAVASCRIPT_READY_FAX_DIALOG, 'oe_module_faxsms_document_render_javascript_fax_dialog');
 }
-
+// This seems lonely.Where else to put one? Maybe chat or pnotes.
 if ($allowSMSButtons) {
     $eventDispatcher->addListener(SendSmsEvent::ACTIONS_RENDER_SMS_POST, 'oe_module_faxsms_sms_render_action_buttons');
     $eventDispatcher->addListener(SendSmsEvent::JAVASCRIPT_READY_SMS_POST, 'oe_module_faxsms_sms_render_javascript_post_load');
 }
-
-if (!empty($_SESSION['session_database_uuid'] ?? null) && $allowSMS) {
-    $eventDispatcher->addListener(SendNotificationEvent::SEND_NOTIFICATION_BY_SERVICE, [new NotificationEventListener(), 'onNotifyEvent']);
-}
-$eventDispatcher->addListener(SendNotificationEvent::ACTIONS_RENDER_NOTIFICATION_POST, 'notificationButton');
-$eventDispatcher->addListener(SendNotificationEvent::JAVASCRIPT_READY_NOTIFICATION_POST, 'notificationDialogFunction');

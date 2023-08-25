@@ -61,12 +61,12 @@ function ProductRegistrationService() {
     };
 
     var _genericAjaxFailureHandler = function(jqXHR, callback) {
-        if (jqXHR && Object.prototype.hasOwnProperty.call(jqXHR, 'responseText')) {
+        if (jqXHR && jqXHR.hasOwnProperty('responseText')) {
             try {
                 var rawErrorObject = jqXHR.responseText;
                 var parsedErrorObject = JSON.parse(rawErrorObject);
 
-                if (parsedErrorObject && Object.prototype.hasOwnProperty.call(parsedErrorObject, 'message')) {
+                if (parsedErrorObject && parsedErrorObject.hasOwnProperty('message')) {
                     callback(parsedErrorObject.message, null);
                 }
             } catch (jsonParseException) {

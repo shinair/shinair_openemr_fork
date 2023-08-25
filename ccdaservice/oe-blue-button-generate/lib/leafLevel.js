@@ -25,7 +25,7 @@ exports.docDateProperty = function (key) {
 
 exports.boolInputProperty = function (key) {
     return function (input) {
-        if (input && Object.prototype.hasOwnProperty.call(input, key)) {
+        if (input && input.hasOwnProperty(key)) {
             return input[key].toString();
         } else {
             return null;

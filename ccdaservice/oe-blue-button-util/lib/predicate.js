@@ -15,7 +15,7 @@ var hasProperty = exports.hasProperty = function (deepProperty) {
                     if (typeof input !== 'object') {
                         return false;
                     }
-                    if (!Object.prototype.hasOwnProperty.call(input, piece)) {
+                    if (!input.hasOwnProperty(piece)) {
                         return false;
                     }
                     input = input[piece];
@@ -30,7 +30,7 @@ var hasProperty = exports.hasProperty = function (deepProperty) {
     } else {
         return function (input) {
             if (exists(input) && (typeof input === 'object')) {
-                return Object.prototype.hasOwnProperty.call(input, deepProperty);
+                return input.hasOwnProperty(deepProperty);
             } else {
                 return false;
             }

@@ -31,7 +31,7 @@ export function PatientConferenceRoom(apiCSRFToken, enabledFeatures, translation
                 }
             })
             .then(apptReadyData => {
-                if (patientConferenceRoom.__shutdown || !checkProviderReadyForPatientInterval) {
+                if (patientConferenceRoom.__shutdown) {
                     return; // don't do anything else here as we have shutdown inbetween the callback.
                 }
                 if (apptReadyData.session)
@@ -61,8 +61,7 @@ export function PatientConferenceRoom(apiCSRFToken, enabledFeatures, translation
                 if (errorMessage) {
                     errorMessage.classList.remove(('d-none'));
                 }
-                // moving this to a console.log so we don't throw errors up in Comlink's app.
-                console.log("Waiting room communication error", error);
+                console.error(error);
             });
     }
 

@@ -160,7 +160,6 @@ model.OnsiteDocumentModel = Backbone.Model.extend({
 	fullDocument: '',
 	fileName: '',
 	filePath: '',
-    templateData: '',
 	defaults: {
 		'id': null,
 		'pid': 0,
@@ -180,8 +179,7 @@ model.OnsiteDocumentModel = Backbone.Model.extend({
 		'patientSignature': '',
 		'fullDocument': '',
 		'fileName': '',
-		'filePath': '',
-        'templateData': '',
+		'filePath': ''
 	}
 });
 

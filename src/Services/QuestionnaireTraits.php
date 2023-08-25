@@ -249,7 +249,7 @@ trait QuestionnaireTraits
             case "valueCoding":
                 $obv = array(
                     'type' => 'coding',
-                    'system' => $answer[$type]['system'] ?? null,
+                    'system' => $answer[$type]['system'],
                     'code' => $answer[$type]['code'],
                     'display' => $answer[$type]['display'],
                 );

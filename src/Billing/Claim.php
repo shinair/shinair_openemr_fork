@@ -52,7 +52,7 @@ class Claim
     public $using_modifiers;
 
 
-    public function __construct($pid, $encounter_id, $x12_partner_id)
+    public function __construct($pid, $encounter_id)
     {
         $this->pid = $pid;
         $this->encounter_id = $encounter_id;
@@ -63,7 +63,7 @@ class Claim
         $this->facilityService = new FacilityService();
         $this->facility = $this->facilityService->getById($this->encounter['facility_id']);
         $this->pay_to_provider = ''; // will populate from facility someday :)
-        $this->x12_partner = $this->getX12Partner($x12_partner_id);
+        $this->x12_partner = $this->getX12Partner($this->procs[0]['x12_partner_id']);
         $this->provider = (new UserService())->getUser($this->encounter['provider_id']);
         $this->billing_facility = empty($this->encounter['billing_facility']) ?
             $this->facilityService->getPrimaryBillingLocation() :
@@ -126,7 +126,7 @@ class Claim
                 $row['provider'] = sqlQuery($sql, array($row['provider_id']));
                 // Get insurance numbers for this row's provider.
                 $sql = "SELECT * FROM insurance_numbers " .
-                "WHERE (insurance_company_id = ? OR insurance_company_id is NULL) AND provider_id = ? " .
+                "WHERE (insurance_company_id = ? OR insurance_company_id is NULL) AND provider_id = ?" .
                 "ORDER BY insurance_company_id DESC LIMIT 1";
                 $row['insurance_numbers'] = sqlQuery($sql, array($row['payer_id'], $row['provider_id']));
             }
@@ -206,7 +206,7 @@ class Claim
     // Handles date time stamp formats as well
     public function cleanDate($date_field)
     {
-        $cleandate = str_replace('-', '', substr(($date_field ?? ''), 0, 10));
+        $cleandate = str_replace('-', '', substr($date_field, 0, 10));
 
         if (substr_count($cleandate, '0') == 8) {
             $cleandate = '';
@@ -227,8 +227,8 @@ class Claim
         $this->payers = array();
         $this->payers[0] = array();
         $query = "SELECT * FROM insurance_data WHERE pid = ? AND 
-            (date <= ? OR date IS NULL) AND (date_end >= ? OR date_end IS NULL) ORDER BY type ASC, date DESC";
-        $dres = sqlStatement($query, array($this->pid, $encounter_date, $encounter_date));
+            (date <= ? OR date IS NULL) ORDER BY type ASC, date DESC";
+        $dres = sqlStatement($query, array($this->pid, $encounter_date));
         $prevtype = '';
         while ($drow = sqlFetchArray($dres)) {
             if (strcmp($prevtype, $drow['type']) == 0) {
@@ -617,7 +617,7 @@ class Claim
             return false;
         }
 
-        $tmp = $this->x12Clean(trim($this->x12_partner['x12_submitter_name']  ?? ''));
+        $tmp = $this->x12Clean(trim($this->x12_partner['x12_submitter_name'] ?? ''));
         return $tmp;
     }
 
@@ -750,10 +750,9 @@ class Claim
         if (!$this->x12_submitter_name()) {
             return $this->x12Clean(trim($this->billing_facility['attn']));
         } else {
-            $query = "SELECT fname, lname FROM users WHERE id = ?";
-            $ores = sqlQuery($query, array($this->x12_partner['x12_submitter_id'] ?? ''));
-            $contact_name = $this->x12Clean(trim($ores['fname'] ?? '')) . " " . $this->x12Clean(trim($ores['lname'] ?? ''));
-            return $contact_name;
+            $query = "SELECT organization FROM users WHERE federaltaxid = ?";
+            $ores = sqlQuery($query, array($this->x12_partner['id_number'] ?? ''));
+            return $this->x12Clean(trim($ores['organization'] ?? ''));
         }
     }
 
@@ -762,8 +761,8 @@ class Claim
         if (!$this->x12_submitter_name()) {
             $tmp_phone = $this->x12Clean(trim($this->billing_facility['phone']));
         } else {
-            $query = "SELECT phonew1 FROM users WHERE id = ?";
-            $ores = sqlQuery($query, array($this->x12_partner['x12_submitter_id'] ?? ''));
+            $query = "SELECT phonew1 FROM users WHERE federaltaxid = ?";
+            $ores = sqlQuery($query, array($this->x12_partner['id_number'] ?? ''));
             $tmp_phone = $this->x12Clean(trim($ores['phonew1'] ?? ''));
         }
 
@@ -785,20 +784,9 @@ class Claim
         if (!$this->x12_submitter_name()) {
             return $this->x12Clean(trim($this->billing_facility['email'] ?? ''));
         } else {
-            $query = "SELECT email FROM users WHERE id = ?";
-            $ores = sqlQuery($query, array($this->x12_partner['x12_submitter_id'] ?? ''));
+            $query = "SELECT email FROM users WHERE federaltaxid = ?";
+            $ores = sqlQuery($query, array($this->x12_partner['id_number'] ?? ''));
             return $this->x12Clean(trim($ores['email'] ?? ''));
-        }
-    }
-
-    public function billingIdCode()
-    {
-        if (!$this->x12_submitter_name()) {
-            return $this->x12Clean(trim($this->x12_sender_id() ?? ''));
-        } else {
-            $query = "SELECT federaltaxid FROM users WHERE id = ?";
-            $ores = sqlQuery($query, array($this->x12_partner['x12_submitter_id'] ?? ''));
-            return $this->x12Clean(trim($ores['federaltaxid'] ?? ''));
         }
     }
 

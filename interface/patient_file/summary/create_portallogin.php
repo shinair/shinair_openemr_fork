@@ -76,8 +76,8 @@ echo $patientAccessOnSiteService->filterTwigTemplateData($pid, 'patient/portal_l
         , 'fname' => $credentials['fname']
         , 'portal_username' => $credentials['portal_username']
         , 'id' => $credentials['id']
-        , 'uname' => $credentials['portal_username'] ?: $credentials['fname'] . $credentials['id']
-        , 'login_uname' => $credentials['portal_login_username'] ?? $trustedUserName
+        , 'uname' => $credentials['portal_username'] ? $credentials['portal_username'] : $credentials['fname'] . $credentials['id']
+        , 'login_uname' => !empty($trustedUserName) ? $trustedUserName : $credentials['portal_username']
         , 'pwd' => $patientAccessOnSiteService->getRandomPortalPassword()
         , 'enforce_signin_email' => $GLOBALS['enforce_signin_email']
         , 'email_direct' => trim($trustedEmail['email_direct'])

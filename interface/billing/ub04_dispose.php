@@ -19,7 +19,7 @@ use OpenEMR\Pdf\PdfCreator;
 
 function ub04_dispose()
 {
-    $dispose = ($_POST['handler'] ?? null) ? $_POST['handler'] : ($_GET['handler'] ?? null);
+    $dispose = isset($_POST['handler']) ? $_POST['handler'] : $_GET['handler'];
     if ($dispose) {
         if ($dispose == "edit_save") {
             $ub04id = isset($_POST['ub04id']) ? $_POST['ub04id'] : $_GET['ub04id'];
@@ -206,7 +206,7 @@ function get_ub04_array($pid, $encounter, &$log = "")
     }
     $log .= "*** Generating UB04 Claim.";
     $today = time();
-    $claim = new Claim($pid, $encounter, false);
+    $claim = new Claim($pid, $encounter);
 
     $ub04id = array();
     $ub04id[0] = array();

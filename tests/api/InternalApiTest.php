@@ -94,9 +94,7 @@ $gbl = RestConfig::GetInstance();
 $gbl::setNotRestCall();
 $restRequest = new HttpRestRequest($gbl, $_SERVER);
 $restRequest->setRequestMethod("GET");
-$restRequest->setRequestPath("/api/facility");
-$restRequest->setIsLocalApi(true);
-$restRequest->setApiType("oemr");
+$restRequest->setRequestURI("/api/facility");
 // below will return as json
 echo "<b>api via route handler call returning json:</b><br />";
 echo HttpRestRouteHandler::dispatch($gbl::$ROUTE_MAP, $restRequest, 'direct-json');

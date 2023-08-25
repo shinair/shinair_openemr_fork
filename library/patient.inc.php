@@ -391,18 +391,15 @@ function getInsuranceDataByDate(
     $type,
     $given = "insd.*, DATE_FORMAT(subscriber_DOB,'%m/%d/%Y') as subscriber_DOB, ic.name as provider_name"
 ) {
-  /*
-   This must take the date in the following manner: YYYY-MM-DD.
-   This function recalls the insurance value that was most recently entered from the
-   given date and before the insurance end date. It will call up most recent records up to and on the date given,
-   but not records entered after the given date.
-   */
+ // this must take the date in the following manner: YYYY-MM-DD
+  // this function recalls the insurance value that was most recently enterred from the
+  // given date. it will call up most recent records up to and on the date given,
+  // but not records enterred after the given date
     $sql = "select $given from insurance_data as insd " .
     "left join insurance_companies as ic on ic.id = provider " .
     "where pid = ? and (date_format(date,'%Y-%m-%d') <= ? OR date IS NULL) and " .
-    "(date_format(date_end,'%Y-%m-%d') >= ? OR date_end IS NULL) and " .
-    "type = ? order by date DESC limit 1";
-    return sqlQuery($sql, array($pid, $date, $date, $type));
+    "type=? order by date DESC limit 1";
+    return sqlQuery($sql, array($pid,$date,$type));
 }
 
 function get_unallocated_patient_balance($pid)
@@ -434,11 +431,10 @@ function getInsuranceNameByDate(
   // but not records enterred after the given date
     $sql = "select $given from insurance_data as insd " .
     "left join insurance_companies as ic on ic.id = provider " .
-    "where pid = ? and (date_format(date,'%Y-%m-%d') <= ? OR date IS NULL) and " .
-    "(date_format(date_end,'%Y-%m-%d') >= ? OR date_end IS NULL) and " .
+    "where pid = ? and date_format(date,'%Y-%m-%d') <= ? and " .
     "type = ? order by date DESC limit 1";
 
-    $row = sqlQuery($sql, array($pid, $date, $date, $type));
+    $row = sqlQuery($sql, array($pid, $date, $type));
     return $row['provider_name'];
 }
 
@@ -583,10 +579,7 @@ function getPatientLnames($term = "%", $given = "pid, id, lname, fname, mname, p
         $returnval[$iter] = $row;
     }
 
-    if (is_countable($returnval)) {
-        _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
-    }
-
+    _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
     return $returnval;
 }
 /**
@@ -664,9 +657,7 @@ function getPatientId($pid = "%", $given = "pid, id, lname, fname, mname, provid
         $returnval[$iter] = $row;
     }
 
-    if (is_countable($returnval)) {
-        _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
-    }
+    _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
     return $returnval;
 }
 
@@ -700,9 +691,7 @@ function getByPatientDemographics($searchTerm = "%", $given = "pid, id, lname, f
         $returnval[$iter] = $row;
     }
 
-    if (is_countable($returnval)) {
-        _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
-    }
+    _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
     return $returnval;
 }
 
@@ -771,9 +760,7 @@ function getByPatientDemographicsFilter(
         $returnval[$iter] = $row;
     }
 
-    if (is_countable($returnval)) {
-        _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
-    }
+    _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
     return $returnval;
 }
 
@@ -935,9 +922,7 @@ function getPatientDOB($DOB = "%", $given = "pid, id, lname, fname, mname", $ord
         $returnval[$iter] = $row;
     }
 
-    if (is_countable($returnval)) {
-        _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
-    }
+    _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
     return $returnval;
 }
 
@@ -959,9 +944,7 @@ function getPatientSSN($ss = "%", $given = "pid, id, lname, fname, mname, provid
         $returnval[$iter] = $row;
     }
 
-    if (is_countable($returnval)) {
-        _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
-    }
+    _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
     return $returnval;
 }
 
@@ -984,9 +967,7 @@ function getPatientPhone($phone = "%", $given = "pid, id, lname, fname, mname, p
         $returnval[$iter] = $row;
     }
 
-    if (is_countable($returnval)) {
-        _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
-    }
+    _set_patient_inc_count($limit, count($returnval), $where, $sqlBindArray);
     return $returnval;
 }
 
@@ -1846,7 +1827,7 @@ function get_unallocated_payment_id($pid)
 {
     $query = "SELECT session_id " .
         "FROM ar_session " .
-        "WHERE patient_id = ? AND " .
+        "WHERE apatient_id = ? AND " .
         "adjustment_code = 'pre_payment' AND closed = 0 ORDER BY check_date ASC LIMIT 1";
     $res = sqlQuery($query, array($pid));
     if ($res['session_id']) {

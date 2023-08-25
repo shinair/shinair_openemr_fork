@@ -82,8 +82,7 @@ class AppointmentRestController
     public function delete($eid)
     {
         try {
-            $this->appointmentService->deleteAppointmentRecord($eid);
-            $serviceResult = ['message' => 'record deleted'];
+            $serviceResult = $this->appointmentService->delete($eid);
         } catch (\Exception $exception) {
             (new SystemLogger())->errorLogCaller($exception->getMessage(), ['trace' => $exception->getTraceAsString(), 'eid' => $eid]);
             return RestControllerHelper::responseHandler(['message' => 'Failed to delete appointment'], null, 500);

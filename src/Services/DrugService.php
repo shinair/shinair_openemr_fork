@@ -68,10 +68,10 @@ class DrugService extends BaseService
         }
         // so if we have a puuid we need to make sure we only return drugs that are connected to the current patient.
         if (isset($puuidBind)) {
-            $newSearch['puuid'] = new TokenSearchField('puuid', $puuidBind, true);
+            $search['puuid'] = new TokenSearchField('puuid', $puuidBind, true);
         }
 
-        return $this->search($newSearch, $isAndCondition);
+        return $this->search($search, $isAndCondition);
     }
 
     /**

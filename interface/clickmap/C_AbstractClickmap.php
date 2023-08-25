@@ -160,9 +160,9 @@ abstract class C_AbstractClickmap extends Controller
             return;
         }
 
-        $model = $this->createModel($_POST['id']);
-        parent::populate_object($model);
-        $model->persist();
+        $this->model = $this->createModel($_POST['id']);
+        parent::populate_object($this->model);
+        $this->model->persist();
         if ($GLOBALS['encounter'] == "") {
             $GLOBALS['encounter'] = date("Ymd");
         }
@@ -170,9 +170,9 @@ abstract class C_AbstractClickmap extends Controller
         if (empty($_POST['id'])) {
             addForm(
                 $GLOBALS['encounter'],
-                $model->getTitle(),
-                $model->id,
-                $model->getCode(),
+                $this->model->getTitle(),
+                $this->model->id,
+                $this->model->getCode(),
                 $GLOBALS['pid'],
                 $_SESSION['userauthorized']
             );

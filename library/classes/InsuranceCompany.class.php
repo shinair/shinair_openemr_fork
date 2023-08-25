@@ -313,13 +313,19 @@ class InsuranceCompany extends ORDataObject
         }
     }
 
-    public function insurance_companies_factory()
+    public function insurance_companies_factory($city = "", $sort = "ORDER BY name, id")
     {
+        if (empty($city)) {
+             $city = "";
+        } else {
+            $city = " WHERE city = '" . add_escape_custom($foreign_id) . "'";
+        }
+
         $p = new InsuranceCompany();
         $icompanies = array();
         $sql = "SELECT p.id, a.city " .
             "FROM " . escape_table_name($p->_table) . " AS p " .
-            "INNER JOIN addresses as a on p.id = a.foreign_id ORDER BY name, id";
+            "INNER JOIN addresses as a on p.id = a.foreign_id " . $city . " " . add_escape_custom($sort);
 
         //echo $sql . "<bR />";
         $results = sqlQ($sql);
