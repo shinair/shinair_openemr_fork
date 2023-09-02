@@ -22,6 +22,8 @@
         ,'bpd_input': window.xl("BP Diastolic")
         ,'validateFailed': window.xl("Please correct the value(s) before proceeding!")
         ,'invalidField': window.xl("The following field has an invalid value")
+        ,'invalidWeight': window.xl("Weight values are out of range")
+        ,'invalidHeight': window.xl("Height values are out of range")
     };
     if (window.vitalsForm) {
         window.vitalsForm.init({{ FORM_ACTION|js_url }}, vitalsTranslations);

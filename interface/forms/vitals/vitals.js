@@ -15,6 +15,18 @@
     function vitalsFormSubmitted() {
         var invalid = "";
 
+        document.getElementById('height_input').classList.remove('error');
+         // 0 < height < 144 (inches) constraint implementation
+         if (document.getElementById('height_input').value != null)
+         {
+             if (document.getElementById('height_input').value < 0 || document.getElementById('height_input').value > 144)
+             {
+             invalid += vitalsTranslations['invalidHeight'] + ":" + vitalsTranslations['height_input'] + "\n";
+             document.getElementById('height_input').className = document.getElementById('height_input').className + " error";
+             document.getElementById('height_input').focus();
+             }
+         }
+
         var elementsToValidate = ['weight_input', 'weight_input_metric', 'height_input', 'height_input_metric', 'bps_input', 'bpd_input'];
 
         for (var i = 0; i < elementsToValidate.length; i++) {
@@ -29,6 +41,17 @@
                 document.getElementById(current_elem_id).focus();
             }
 
+            // 0 < height < 999 constraint implementation
+            if (current_elem_id == 'weight_input')
+            {
+                if (document.getElementById(current_elem_id).value < 0 || document.getElementById(current_elem_id).value > 999)
+                {
+                invalid += vitalsTranslations['invalidWeight'] + ":" + vitalsTranslations[current_elem_id] + "\n";
+                document.getElementById(current_elem_id).className = document.getElementById(current_elem_id).className + " error";
+                document.getElementById(current_elem_id).focus();
+                }
+            }
+            
             if (invalid.length > 0) {
                 invalid += "\n" + vitalsTranslations['validateFailed'];
                 alert(invalid);
@@ -36,6 +59,14 @@
             } else {
                 return top.restoreSession();
             }
+        }
+
+        if (invalid.length > 0) {
+            invalid += "\n" + vitalsTranslations['validateFailed'];
+            alert(invalid);
+            return false;
+        } else {
+            return top.restoreSession();
         }
     }
 
