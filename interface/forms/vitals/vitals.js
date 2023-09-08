@@ -30,7 +30,7 @@
         // 0 < pulse < 480 (per min) constraint implementation
         document.getElementById('pulse_input').classList.remove('error');
         if (document.getElementById('pulse_input').value != "") {
-            if (document.getElementById('pulse_input').value <= 0 || document.getElementById('pulse_input').value > 480) {
+            if (document.getElementById('pulse_input').value <= 0 || document.getElementById('pulse_input').value > 350) {
                 // Clear the value of pulse_input
                 document.getElementById('pulse_input').value = "";
                 invalid += vitalsTranslations['invalidPulse'] + ":" + vitalsTranslations['pulse_input'] + "\n";
