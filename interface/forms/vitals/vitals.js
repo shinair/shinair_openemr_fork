@@ -27,7 +27,7 @@
             }
         }
 
-        // 0 < pulse < 480 (per min) constraint implementation
+        // 0 < pulse < 350 (per min) constraint implementation
         document.getElementById('pulse_input').classList.remove('error');
         if (document.getElementById('pulse_input').value != "") {
             if (document.getElementById('pulse_input').value <= 0 || document.getElementById('pulse_input').value > 350) {
@@ -40,7 +40,7 @@
             }
         }
 
-        // 0 < respiration < 200 (per min) constraint implementation
+        // 0 < respiration < 100 (per min) constraint implementation
         document.getElementById('respiration_input').classList.remove('error');
         if (document.getElementById('respiration_input').value != "") {
             if (document.getElementById('respiration_input').value <= 2 || document.getElementById('respiration_input').value > 100) {
@@ -51,10 +51,10 @@
             }
         }
 
-        // 0 < BMI < 500 constraint implementation
+        // 0.4 < BMI < 600 constraint implementation (Based on the range values for height and weight)
         document.getElementById('BMI_input').classList.remove('error');
         if (document.getElementById('BMI_input').value != "") {
-            if (document.getElementById('BMI_input').value <= 6 || document.getElementById('BMI_input').value > 210) {
+            if (document.getElementById('BMI_input').value <= 0.5 || document.getElementById('BMI_input').value > 601) {
                 invalid += vitalsTranslations['invalidBMI'] + ":" + vitalsTranslations['BMI_input'] + "\n";
                 document.getElementById('BMI_input').className = document.getElementById('BMI_input').className + " error";
                 document.getElementById('BMI_input').focus();
@@ -62,7 +62,28 @@
             }
         }
 
-        var elementsToValidate = ['weight_input', 'weight_input_metric', 'height_input', 'height_input_metric', 'bps_input', 'bpd_input', 'pulse_input', 'respiration_input', 'BMI_input'];
+        // 40 < BPS < 400 constraint implementation
+        document.getElementById('bps_input').classList.remove('error');
+        if (document.getElementById('bps_input').value != "") {
+            if (document.getElementById('bps_input').value <= 39 || document.getElementById('bps_input').value > 301) {
+                invalid += vitalsTranslations['invalidBPS'] + ":" + vitalsTranslations['bps_input'] + "\n";
+                document.getElementById('bps_input').className = document.getElementById('bps_input').className + " error";
+                document.getElementById('bps_input').focus();
+                document.getElementById('bps_input').value = "";
+            }
+        }
+
+        // 0 < BPD < 300 constraint implementation
+        document.getElementById('bpd_input').classList.remove('error');
+        if (document.getElementById('bpd_input').value != "") {
+            if (document.getElementById('bpd_input').value <= 30 || document.getElementById('bpd_input').value > 201) {
+                invalid += vitalsTranslations['invalidBPD'] + ":" + vitalsTranslations['bpd_input'] + "\n";
+                document.getElementById('bpd_input').className = document.getElementById('bpd_input').className + " error";
+                document.getElementById('bpd_input').focus();
+                document.getElementById('bpd_input').value = "";
+            }
+        }
+        var elementsToValidate = ['weight_input', 'weight_input_metric', 'height_input', 'height_input_metric', 'bps_input', 'bpd_input', 'pulse_input', 'respiration_input', 'BMI_input', 'bps_input', 'bpd_input'];
 
         for (var i = 0; i < elementsToValidate.length; i++) {
             var current_elem_id = elementsToValidate[i];
@@ -78,7 +99,7 @@
 
             // 0 < weight < 999 constraint implementation
             if (current_elem_id == 'weight_input' && document.getElementById('weight_input').value != "" ) {
-                if (document.getElementById(current_elem_id).value <= 0 || document.getElementById(current_elem_id).value > 999) {
+                if (document.getElementById(current_elem_id).value <= 4 || document.getElementById(current_elem_id).value > 800) {
                     invalid += vitalsTranslations['invalidWeight'] + ":" + vitalsTranslations[current_elem_id] + "\n";
                     document.getElementById(current_elem_id).className = document.getElementById(current_elem_id).className + " error";
                     document.getElementById(current_elem_id).focus();
