@@ -18,7 +18,7 @@
         <div class="tabsNoHover w-1">
             <i class="fa fa-caret-up menu_arrow" id="patient_caret" title="<?php echo xla('Toggle the Patient Panel'); ?>" aria-hidden="true"></i>
         </div>
-        <!-- ko  foreach: tabsList.slice(0, 2) --> <!-- Limit to the first two tabs -->
+        <!-- ko  foreach: tabsList.slice(0, 3) --> <!-- Limit to the first two tabs -->
             <div class="tabSpan bgcolor2" data-bind="click: tabClicked, css: {tabsNoHover: !visible()}">
                 <span class="tabTitle pr-2" data-bind="text: title, click: tabClicked, css: {tabHidden: !visible()}"></span>
                 <span class="fa fa-fw fa-xs mr-1 fa-sync" data-bind="click: tabRefresh, class: spinner"></span>
@@ -37,7 +37,7 @@
     </div>
 </script>
 <script type="text/html" id="tabs-frames">
-    <!-- ko  foreach: tabs.tabsList.slice(0, 2) --> <!-- Limit rendering to the first two tabs -->
+    <!-- ko  foreach: tabs.tabsList.slice(0, 3) --> <!-- Limit rendering to the first two tabs -->
     <div class="frameDisplay" data-bind="visible:visible">
         <h5 class="text-center position-relative" style="top: 50%;" data-bind="text: loading_text, visible: loading_text_status"></h5>
         <iframe data-bind="location: $data, iframeName: $data.name"></iframe>

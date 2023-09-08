@@ -20,10 +20,16 @@
         ,'height_input_metric': window.xl("Height/Length") + ' (' + window.xl("cm") + ')'
         ,'bps_input': window.xl("BP Systolic")
         ,'bpd_input': window.xl("BP Diastolic")
+        ,'pulse_input': window.xl("Pulse") + ' (' + window.xl("per min") + ')'
+        ,'respiration_input': window.xl("Respiration") + ' (' + window.xl("per min") + ')'
+        ,'BMI_input': window.xl("BMI") + ' (' + window.xl("kg/m^2") + ')'
         ,'validateFailed': window.xl("Please correct the value(s) before proceeding!")
         ,'invalidField': window.xl("The following field has an invalid value")
         ,'invalidWeight': window.xl("Weight values are out of range")
         ,'invalidHeight': window.xl("Height values are out of range")
+        ,'invalidPulse': window.xl("Pulse values are out of range")
+        ,'invalidRespiration': window.xl("Respiration values are out of range")
+        ,'invalidBMI': window.xl("BMI values are out of range")
     };
     if (window.vitalsForm) {
         window.vitalsForm.init({{ FORM_ACTION|js_url }}, vitalsTranslations);

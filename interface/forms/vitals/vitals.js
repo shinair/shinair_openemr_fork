@@ -7,7 +7,7 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-(function(window, oeUI) {
+(function (window, oeUI) {
 
     let translations = {};
     let webroot = null;
@@ -16,18 +16,53 @@
         var invalid = "";
 
         document.getElementById('height_input').classList.remove('error');
-         // 0 < height < 144 (inches) constraint implementation
-         if (document.getElementById('height_input').value != null)
-         {
-             if (document.getElementById('height_input').value < 0 || document.getElementById('height_input').value > 144)
-             {
-             invalid += vitalsTranslations['invalidHeight'] + ":" + vitalsTranslations['height_input'] + "\n";
-             document.getElementById('height_input').className = document.getElementById('height_input').className + " error";
-             document.getElementById('height_input').focus();
-             }
-         }
+        // 0 < height < 108 (inches) constraint implementation
+        if (document.getElementById('height_input').value != "") {
+            if (document.getElementById('height_input').value <= 0 || document.getElementById('height_input').value > 108) {
+                // Clear the value of height_input
+                document.getElementById('height_input').value = "";
+                invalid += vitalsTranslations['invalidHeight'] + ":" + vitalsTranslations['height_input'] + "\n";
+                document.getElementById('height_input').className = document.getElementById('height_input').className + " error";
+                document.getElementById('height_input').focus();
+            }
+        }
 
-        var elementsToValidate = ['weight_input', 'weight_input_metric', 'height_input', 'height_input_metric', 'bps_input', 'bpd_input'];
+        // 0 < pulse < 480 (per min) constraint implementation
+        document.getElementById('pulse_input').classList.remove('error');
+        if (document.getElementById('pulse_input').value != "") {
+            if (document.getElementById('pulse_input').value <= 0 || document.getElementById('pulse_input').value > 480) {
+                // Clear the value of pulse_input
+                document.getElementById('pulse_input').value = "";
+                invalid += vitalsTranslations['invalidPulse'] + ":" + vitalsTranslations['pulse_input'] + "\n";
+                document.getElementById('pulse_input').className = document.getElementById('pulse_input').className + " error";
+                document.getElementById('pulse_input').focus();
+                document.getElementById('pulse_input').value = "";
+            }
+        }
+
+        // 0 < respiration < 200 (per min) constraint implementation
+        document.getElementById('respiration_input').classList.remove('error');
+        if (document.getElementById('respiration_input').value != "") {
+            if (document.getElementById('respiration_input').value <= 2 || document.getElementById('respiration_input').value > 100) {
+                invalid += vitalsTranslations['invalidRespiration'] + ":" + vitalsTranslations['respiration_input'] + "\n";
+                document.getElementById('respiration_input').className = document.getElementById('respiration_input').className + " error";
+                document.getElementById('respiration_input').focus();
+                document.getElementById('respiration_input').value = "";
+            }
+        }
+
+        // 0 < BMI < 500 constraint implementation
+        document.getElementById('BMI_input').classList.remove('error');
+        if (document.getElementById('BMI_input').value != "") {
+            if (document.getElementById('BMI_input').value <= 6 || document.getElementById('BMI_input').value > 210) {
+                invalid += vitalsTranslations['invalidBMI'] + ":" + vitalsTranslations['BMI_input'] + "\n";
+                document.getElementById('BMI_input').className = document.getElementById('BMI_input').className + " error";
+                document.getElementById('BMI_input').focus();
+                document.getElementById('BMI_input').value = "";
+            }
+        }
+
+        var elementsToValidate = ['weight_input', 'weight_input_metric', 'height_input', 'height_input_metric', 'bps_input', 'bpd_input', 'pulse_input', 'respiration_input', 'BMI_input'];
 
         for (var i = 0; i < elementsToValidate.length; i++) {
             var current_elem_id = elementsToValidate[i];
@@ -41,17 +76,16 @@
                 document.getElementById(current_elem_id).focus();
             }
 
-            // 0 < height < 999 constraint implementation
-            if (current_elem_id == 'weight_input')
-            {
-                if (document.getElementById(current_elem_id).value < 0 || document.getElementById(current_elem_id).value > 999)
-                {
-                invalid += vitalsTranslations['invalidWeight'] + ":" + vitalsTranslations[current_elem_id] + "\n";
-                document.getElementById(current_elem_id).className = document.getElementById(current_elem_id).className + " error";
-                document.getElementById(current_elem_id).focus();
+            // 0 < weight < 999 constraint implementation
+            if (current_elem_id == 'weight_input' && document.getElementById('weight_input').value != "" ) {
+                if (document.getElementById(current_elem_id).value <= 0 || document.getElementById(current_elem_id).value > 999) {
+                    invalid += vitalsTranslations['invalidWeight'] + ":" + vitalsTranslations[current_elem_id] + "\n";
+                    document.getElementById(current_elem_id).className = document.getElementById(current_elem_id).className + " error";
+                    document.getElementById(current_elem_id).focus();
+                    document.getElementById('weight_input').value = "";
                 }
             }
-            
+
             if (invalid.length > 0) {
                 invalid += "\n" + vitalsTranslations['validateFailed'];
                 alert(invalid);
@@ -137,7 +171,7 @@
         }
 
         let vitalsConvInputs = vitalsForm.querySelectorAll(".vitals-conv-unit");
-        vitalsConvInputs.forEach(function(node) {
+        vitalsConvInputs.forEach(function (node) {
             node.addEventListener('change', convInputElement);
         });
     }
@@ -161,40 +195,30 @@ function vitalsGetPrecision(node, defaultValue) {
 }
 
 // TODO: we need to move all of these functions into the anonymous function and connect the events via event listeners
-function convUnit(system, unit, value)
-{
-    if (unit == 'kg' || unit == 'lbs')
-    {
-        if (system == 'metric')
-        {
+function convUnit(system, unit, value) {
+    if (unit == 'kg' || unit == 'lbs') {
+        if (system == 'metric') {
             return convKgtoLb(value);
         }
-        else
-        {
+        else {
             return convLbtoKg(value);
         }
     }
 
-    if (unit == 'in' || unit == 'cm')
-    {
-        if (system == 'metric')
-        {
+    if (unit == 'in' || unit == 'cm') {
+        if (system == 'metric') {
             return convCmtoIn(value);
         }
-        else
-        {
+        else {
             return convIntoCm(value);
         }
     }
 
-    if (unit == 'C' || unit=='F')
-    {
-        if (system == 'metric')
-        {
+    if (unit == 'C' || unit == 'F') {
+        if (system == 'metric') {
             return convCtoF(value);
         }
-        else
-        {
+        else {
             return convFtoC(value);
         }
     }
@@ -202,20 +226,19 @@ function convUnit(system, unit, value)
 
 function convLbtoKg(value) {
     var lb = value;
-    var hash_loc=lb.indexOf("#");
-    if(hash_loc>=0)
-    {
-        var pounds=lb.substr(0,hash_loc);
-        var ounces=lb.substr(hash_loc+1);
-        var num=parseInt(pounds)+parseInt(ounces)/16;
-        lb=num;
+    var hash_loc = lb.indexOf("#");
+    if (hash_loc >= 0) {
+        var pounds = lb.substr(0, hash_loc);
+        var ounces = lb.substr(hash_loc + 1);
+        var num = parseInt(pounds) + parseInt(ounces) / 16;
+        lb = num;
         return lb;
     }
     if (lb == "0") {
         return 0;
     }
     else if (lb == parseFloat(lb)) {
-        kg = lb*0.45359237;
+        kg = lb * 0.45359237;
         return kg;
     }
     else {
@@ -230,7 +253,7 @@ function convKgtoLb(value) {
         return 0;
     }
     else if (kg == parseFloat(kg)) {
-        lb = kg/0.45359237;
+        lb = kg / 0.45359237;
         return lb;
     }
     else {
@@ -245,7 +268,7 @@ function convIntoCm(value) {
         return 0;
     }
     else if (inch == parseFloat(inch)) {
-        cm = inch*2.54;
+        cm = inch * 2.54;
         return cm;
     }
     else {
@@ -260,7 +283,7 @@ function convCmtoIn(value) {
         return 0;
     }
     else if (cm == parseFloat(cm)) {
-        inch = cm/2.54;
+        inch = cm / 2.54;
         return inch;
     }
     else {
@@ -274,7 +297,7 @@ function convFtoC(value) {
         return 0;
     }
     else if (Fdeg == parseFloat(Fdeg)) {
-        let Cdeg = (Fdeg-32)*5/9; // originally 0.5556 which is not precise!
+        let Cdeg = (Fdeg - 32) * 5 / 9; // originally 0.5556 which is not precise!
         return Cdeg;
     }
     else {
@@ -289,11 +312,11 @@ function convCtoF(value) {
     }
     else if (Cdeg == parseFloat(Cdeg)) {
         Cdeg = parseFloat(Cdeg);
-        let Fdeg = (Cdeg*9/5)+32; // originally 0.5556 which is not precise when working with 2 digit decimal conversions!
+        let Fdeg = (Cdeg * 9 / 5) + 32; // originally 0.5556 which is not precise when working with 2 digit decimal conversions!
         return Fdeg;
     }
     else {
-        $("#"+name).val("");
+        $("#" + name).val("");
     }
 }
 
@@ -319,11 +342,11 @@ function calculateBMI() {
     }
     var height = parseFloat(heightNode.value);
     var weight = parseFloat(weightNode.value);
-    if(isNaN(height) || height == 0 || isNaN(weight) || weight == 0) {
+    if (isNaN(height) || height == 0 || isNaN(weight) || weight == 0) {
         bmiNode.value = "";
     }
-    else if((height == parseFloat(height)) && (weight == parseFloat(weight))) {
-        bmi = weight/height/height*703;
+    else if ((height == parseFloat(height)) && (weight == parseFloat(weight))) {
+        bmi = weight / height / height * 703;
         bmi = bmi.toFixed(precision);
         bmiNode.value = bmi;
     }
