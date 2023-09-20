@@ -1346,13 +1346,20 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                         $existVitals = sqlQuery("SELECT * FROM form_vitals WHERE pid=?", array($pid));
                         $widgetAuth = ($existVitals) ? true : false;
 
+                        $vitals_id = null; // Initialize id variable
+
+                        if (!empty($existVitals)) {
+                                $vitals_id = $existVitals['id']; // Access the 'id' column of the first entry
+                        }
+
                         $id = "vitals_ps_expand";
                         $viewArgs = [
                             'title' => xl('Vitals'),
                             'id' => $id,
                             'initiallyCollapsed' => (getUserSetting($id) == 0) ? false : true,
-                            'btnLabel' => 'Trend',
-                            'btnLink' => "../encounter/trend_form.php?formname=vitals&context=dashboard",
+                            'btnLabel' => 'Edit', // was 'Trend'
+                             // 'btnLink' => "../encounter/trend_form.php?formname=vitals&context=dashboard", --> This was the old implementation
+                            'btnLink' => "../encounter/view_form.php?formname=vitals&id=" . $vitals_id,
                             'linkMethod' => 'html',
                             'bodyClass' => 'collapse show',
                             'auth' => $widgetAuth,
